@@ -47,16 +47,24 @@
                 templateUrl: 'selfservice.view'
             })
 
+            .state('originalsignature', {
+                url: '/orig-sig',
+                controller: 'CoeCtrl as CoeCtrl',
+                templateUrl: 'originalsignature.view'
+            })
+
             .state('index', {
                 url: '/self-service/:id',
-                controller: 'CoeCtrl as coeCtrl',
-                templateUrl: 'coe.view'
+                controller: 'CoeCtrl as CoeCtrl',
+                // templateUrl: 'coe.view'
+                templateUrl: 'selfservice.view'
             })
             
             .state('original-signature', {
                 url: '/original-signature/:id',
                 controller: 'OriginalSignatureCertCtrl as coeCtrl',
-                templateUrl: 'coe.view'
+                // templateUrl: 'coe.view'
+                templateUrl: 'originalsignature.view'
             })
 
             .state('assigned-to-me', {

@@ -11,7 +11,7 @@
             var data = {}; 
             vm.is_salary_option = 1;
  
-
+             
             TypesSrvcs.list({type_code:'', is_self_service:'NO'}).then (function (response) {
                 if(response.data.status == 200)
                 {

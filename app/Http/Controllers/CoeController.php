@@ -6,13 +6,16 @@ use Illuminate\Support\Facades\Input;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Carbon\Carbon;
 use Crypt;
-// use Auth;
+use Auth;
 use DB;
-// use App\Coe;
-// use App\Employee;
-// use App\Type;
-// use App\Purpose;
-// use App\StatusItem;
+use DataTables;
+use App\Coe;
+use App\Employee;
+use App\Type;
+use App\Purpose;
+use App\StatusItem;
+
+
 
 //Traits
 use App\Traits\TimerTrait;
@@ -24,7 +27,7 @@ class CoeController extends Controller
     use MailTrait;
 
     public function index2(){
-        return view('layout.index');
+        return view('layouts.index');
     }
 
     public function index($id){
@@ -88,7 +91,7 @@ class CoeController extends Controller
         );
  
             $collection = Coe::select(
-                DB::raw("row_number() OVER (ORDER BY coe.created_at DESC) as v_id"),
+                // DB::raw("row_number() OVER (ORDER BY coe.created_at DESC) as v_id"),
                 'coe.coe_code',
                 'coe.employee_code', 
                 DB::raw("CONCAT(rtrim(CONCAT(coe.last_name,' ',COALESCE(coe.affix,''))),', ', COALESCE(coe.first_name,''),' ', COALESCE(coe.middle_name,'')) as name"),
@@ -180,6 +183,89 @@ class CoeController extends Controller
 
     }
 
+    public function show_dtables(Request $request){
+
+        $data = array(
+            'id'=>$request->input('id'),
+            'coe_code'=>$request->input('coe_code'),
+            'request_type'=>$request->input('request_type'),
+            'is_fulfiller'=>$request->input('is_fulfiller'),
+            'is_all_request'=>$request->input('is_all_request'),
+            'is_encrypted'=>$request->input('is_encrypted'),
+        );
+ 
+        $collection = Coe::select(
+            // DB::raw("row_number() OVER (ORDER BY coe.created_at DESC) as v_id"),
+            'coe.coe_code',
+            'coe.employee_code', 
+            DB::raw("CONCAT(rtrim(CONCAT(coe.last_name,' ',COALESCE(coe.affix,''))),', ', COALESCE(coe.first_name,''),' ', COALESCE(coe.middle_name,'')) as name"),
+            DB::raw("CONCAT(rtrim(CONCAT(coe.last_name,' ',COALESCE(coe.affix,''))),', ', COALESCE(coe.first_name,''),' ', COALESCE(coe.middle_name,'')) as name2"),
+            'coe.organization',
+            'coe.date_hired',
+            'coe.employee_subgroup', 
+            'coe.personnel_area',
+            'coe.position',
+            'coe.salary',
+            'coe.coe_type',
+            'coe.is_with_logo',
+            'coe.is_salary_confidential',
+            'coe.gender',
+            'coe.employee_group',
+            'coe.is_self_service',
+            DB::raw("CASE WHEN coe.employee_group = 'PLDT Regular' THEN 'regular' WHEN coe.employee_group = 'PLDT Probationary' THEN 'probationary' ELSE '' END employee_group_type01"),
+            DB::raw("CASE WHEN coe.gender = 'Male' THEN 'he' WHEN coe.gender = 'Female' THEN 'she' ELSE 'Unknown' END as gender_type01"),
+            DB::raw("CASE WHEN coe.gender = 'Male' THEN 'him' WHEN coe.gender = 'Female' THEN 'her' ELSE 'Unknown' END as gender_type02"),
+            DB::raw("CASE WHEN coe.gender = 'Male' THEN 'his' WHEN coe.gender = 'Female' THEN 'her' ELSE 'Unknown' END as gender_type03"),
+            DB::raw("CASE WHEN coe.is_salary_confidential = '0' THEN 'SHOW SALARY' ELSE 'CONFIDENTIAL' END as is_salary_confidential01"),
+            DB::raw("CAST(coe.salary as decimal(10,2)) as salary"),
+            DB::raw("CAST(coe.uslp as decimal(10,2)) as uslp"),
+            DB::raw("CAST(coe.mid_year_bon as decimal(10,2)) as mid_year_bon"),
+            DB::raw("CAST(coe.longevity_bon as decimal(10,2)) as longevity_bon"),
+            DB::raw("CAST(coe.christmas_bon as decimal(10,2)) as christmas_bon"),
+            DB::raw("CAST(coe.allowances as decimal(10,2)) as allowances"),
+            DB::raw("CAST(coe.other_bon as decimal(10,2)) as other_bon"),
+            DB::raw("CAST(coe.total_bon as decimal(10,2)) as total_bon"),
+            'type.type_desc',
+            'coe.created_by',
+            'coe.changed_by',
+            'coe.created_at',
+            'coe.updated_at',
+            'purpose.purpose_desc' 
+        )
+        ->leftjoin('purposes as purpose','purpose.purpose_code','=','coe.coe_purpose')
+        ->leftjoin('coe_types as type','type.type_code','=','purpose.type_code');
+
+        if($data['request_type']=="ORIGINAL SIGNATURE"){
+            $collection = $collection->where('is_self_service', 0);
+        }
+
+        if($data['request_type']=="SELF SERVICE"){
+            $collection = $collection->where('is_self_service', 1);
+        }
+
+        if($data['request_type']=="WALK IN"){
+            $collection = $collection->where('is_self_service', 2);
+        }
+        
+        if(Auth::user()->is_admin==1){
+
+            if($data['is_all_request']!='YES'){
+
+                if($data['is_fulfiller']==='YES'){
+                    $collection = $collection->where('coe.changed_by', Auth::user()->email);
+                }else{
+                    $collection = $collection->where('coe.created_by', Auth::user()->email);
+                }
+                
+            }
+        }else{
+            $collection = $collection->where('coe.created_by', Auth::user()->email);
+        }
+ 
+        return DataTables::of($collection)->make(true);
+
+    }
+
     public function store(Request $request){
 
         $fields = Input::post();
@@ -210,6 +296,7 @@ class CoeController extends Controller
             ->where('affix', $employee->affix)
             ->where('first_name', $employee->first_name)
             ->where('middle_name', $employee->middle_name)
+            ->where('position', $employee->position)
             ->where('organization', $employee->organization)
             ->where('sss_no', $employee->sss_no)
             ->where('tin', $employee->tin)
@@ -221,7 +308,10 @@ class CoeController extends Controller
             ->where('coe_signatory', $fields['coe_signatory'])
             ->where('is_salary_confidential', $fields['salary_option'])
             ->where('created_by', Auth::user()->email)
-            ->whereDate('created_at', $toDate);
+            ->whereYear('created_at', $toDate->year)
+            ->whereMonth('created_at', $toDate->month)
+            ->whereDay('created_at', $toDate->day);
+            // ->whereDate('created_at', $toDate);
 
             if(empty($employee->salary)){
                 $employee->salary = 0;
@@ -262,6 +352,9 @@ class CoeController extends Controller
             
             $isExist = $isExist->count();
 
+            
+
+         
             if($isExist>0){
                 return response()->json([
                     'status' => 500,

@@ -5,8 +5,40 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>COE</title>
-    @include('layout.styles')
-    <base href="/">
+    @include('layouts.styles')
+
+    @if(Config::get('defaults.default.environment')==0)
+    <base href="/online-coe-dev/">
+    @else
+    <base href="/online-coe/">
+    @endif
+
+    <style type="text/css">
+    
+    .fade.in {
+      opacity: 1;
+    }
+
+    .modal.in .modal-dialog {
+      -webkit-transform: translate(0, 0);
+      -o-transform: translate(0, 0);
+      transform: translate(0, 0);
+    }
+
+    .modal-backdrop.in {
+      filter: alpha(opacity=50);
+      opacity: .5;
+    }
+
+    @media (min-width: 768px) {
+      .modal-xlg {
+        width: 90%;
+        max-width:1200px;
+      }
+    }
+
+    </style>
+
 </head>
 <body>
 
@@ -18,10 +50,9 @@
 
     <!-- page container area start -->
 
-    
     <div class="page-container">
         
-        @include('layout.sidemenu')
+        @include('layouts.sidemenu')
         
         <!-- main content area start -->
         <div class="main-content home-bg">
@@ -40,7 +71,7 @@
                     <!-- logout -->
                     <div class="col-md-6 col-sm-4 ">
                         <ul class="notification-area pull-right">
-                            <li class="settings-btn">
+                            <li class="settings-btn"> 
                                 <i class="ti-power-off"></i>
                             </li>
                         </ul>
@@ -66,7 +97,7 @@
 
 
 
-@include('layout.scripts')
+@include('layouts.scripts')
 
 </body>
 </html>
