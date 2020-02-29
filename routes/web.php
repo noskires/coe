@@ -14,3 +14,14 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+// COE API 
+Route::get('/self-service', 'CoeController@index2');
+Route::get('/orig-sig', 'CoeController@index2');
+
+Route::get('/coe', 'CoeController@index');
+Route::get('/coe/{coe_code}', 'CoeController@index');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
