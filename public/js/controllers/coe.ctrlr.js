@@ -23,17 +23,9 @@
                 return ' <a href="#" title="Print Preview" ng-click="CoeCtrl.printCoeBtn(\'' + data + '\');"> <i class="ti-printer"></i> </a>';
             }
 
-            // vm.coeData = {
-            //     coe_code:'',
-            //     request_type:'SELF SERVICE',
-            //     is_fulfiller:'NO', 
-            //     is_all_request:'NO',
-            //     is_encrypted:'NO'
-            // }
-
             vm.coeData = {
                 coe_code:'',
-                request_type:'ORIGINAL SIGNATURE',
+                request_type:'SELF SERVICE',
                 is_fulfiller:'NO', 
                 is_all_request:'NO',
                 is_encrypted:'NO'
