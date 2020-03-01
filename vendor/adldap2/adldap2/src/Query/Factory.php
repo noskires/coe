@@ -10,7 +10,8 @@ use Adldap\Connections\ConnectionInterface;
 /**
  * Adldap2 Search Factory.
  *
- * @package Adldap\Search
+ * Constructs new LDAP queries.
+ *
  *
  * @mixin Builder
  */
@@ -22,13 +23,6 @@ class Factory
     protected $connection;
 
     /**
-     * Stores the current query builder instance.
-     *
-     * @var Builder
-     */
-    protected $query;
-
-    /**
      * Stores the current schema instance.
      *
      * @var SchemaInterface
@@ -36,17 +30,31 @@ class Factory
     protected $schema;
 
     /**
+     * The base DN to use for the search.
+     *
+     * @var string|null
+     */
+    protected $base;
+
+    /**
+     * The query cache.
+     *
+     * @var Cache
+     */
+    protected $cache;
+
+    /**
      * Constructor.
      *
-     * @param ConnectionInterface  $connection
-     * @param SchemaInterface|null $schema
-     * @param string               $baseDn
+     * @param ConnectionInterface  $connection The connection to use when constructing a new query.
+     * @param SchemaInterface|null $schema     The schema to use for the query and models located.
+     * @param string               $baseDn     The base DN to use for all searches.
      */
     public function __construct(ConnectionInterface $connection, SchemaInterface $schema = null, $baseDn = '')
     {
         $this->setConnection($connection)
             ->setSchema($schema)
-            ->setQuery($this->newQuery($baseDn));
+            ->setBaseDn($baseDn);
     }
 
     /**
@@ -59,20 +67,6 @@ class Factory
     public function setConnection(ConnectionInterface $connection)
     {
         $this->connection = $connection;
-
-        return $this;
-    }
-
-    /**
-     * Sets the query property.
-     *
-     * @param Builder $query
-     *
-     * @return $this
-     */
-    public function setQuery(Builder $query)
-    {
-        $this->query = $query;
 
         return $this;
     }
@@ -92,36 +86,41 @@ class Factory
     }
 
     /**
+     * Sets the base distinguished name to perform searches upon.
+     *
+     * @param string $base
+     *
+     * @return $this
+     */
+    public function setBaseDn($base = '')
+    {
+        $this->base = $base;
+
+        return $this;
+    }
+
+    /**
+     * Sets the cache for storing query results.
+     *
+     * @param Cache $cache
+     *
+     * @return $this
+     */
+    public function setCache(Cache $cache)
+    {
+        $this->cache = $cache;
+
+        return $this;
+    }
+
+    /**
      * Returns a new query builder instance.
      *
-     * @param string $baseDn
-     *
      * @return Builder
      */
-    public function newQuery($baseDn = '')
+    public function newQuery()
     {
-        return (new Builder($this->connection, $this->newGrammar(), $this->schema))
-            ->in($baseDn);
-    }
-
-    /**
-     * Returns the current query Builder instance.
-     *
-     * @return Builder
-     */
-    public function getQuery()
-    {
-        return $this->query;
-    }
-
-    /**
-     * Returns a new query grammar instance.
-     *
-     * @return Grammar
-     */
-    public function newGrammar()
-    {
-        return new Grammar();
+        return $this->newBuilder()->in($this->base);
     }
 
     /**
@@ -129,38 +128,37 @@ class Factory
      * connection by performing a search for all entries
      * that contain a common name attribute.
      *
-     * @return \Illuminate\Support\Collection|array
-     */
-    public function all()
-    {
-        return $this->query->whereHas($this->schema->commonName())->get();
-    }
-
-    /**
-     * Alias for the `all()` method.
-     *
-     * @return \Illuminate\Support\Collection|array
+     * @return \Adldap\Query\Collection|array
      */
     public function get()
     {
-        return $this->all();
+        return $this->newQuery()->whereHas($this->schema->commonName())->get();
     }
 
     /**
-     * Returns a query builder limited to users.
+     * Returns a query builder scoped to users.
      *
      * @return Builder
      */
     public function users()
     {
-        return $this->where([
-            $this->schema->objectClass()    => $this->schema->objectClassPerson(),
-            $this->schema->objectCategory() => $this->schema->objectCategoryPerson(),
-        ]);
+        $wheres = [
+            [$this->schema->objectClass(), Operator::$equals, $this->schema->objectClassUser()],
+            [$this->schema->objectCategory(), Operator::$equals, $this->schema->objectCategoryPerson()],
+        ];
+
+        // OpenLDAP doesn't like specifying the omission of user objectclasses
+        // equal to `contact`. We'll make sure we're working with
+        // ActiveDirectory before adding this filter.
+        if (is_a($this->schema, ActiveDirectory::class)) {
+            $wheres[] = [$this->schema->objectClass(), Operator::$doesNotEqual, $this->schema->objectClassContact()];
+        }
+
+        return $this->where($wheres);
     }
 
     /**
-     * Returns a query builder limited to printers.
+     * Returns a query builder scoped to printers.
      *
      * @return Builder
      */
@@ -172,7 +170,7 @@ class Factory
     }
 
     /**
-     * Returns a query builder limited to organizational units.
+     * Returns a query builder scoped to organizational units.
      *
      * @return Builder
      */
@@ -184,7 +182,7 @@ class Factory
     }
 
     /**
-     * Returns a query builder limited to groups.
+     * Returns a query builder scoped to groups.
      *
      * @return Builder
      */
@@ -196,7 +194,7 @@ class Factory
     }
 
     /**
-     * Returns a query builder limited to exchange servers.
+     * Returns a query builder scoped to containers.
      *
      * @return Builder
      */
@@ -208,7 +206,7 @@ class Factory
     }
 
     /**
-     * Returns a query builder limited to exchange servers.
+     * Returns a query builder scoped to contacts.
      *
      * @return Builder
      */
@@ -220,7 +218,7 @@ class Factory
     }
 
     /**
-     * Returns a query builder limited to exchange servers.
+     * Returns a query builder scoped to computers.
      *
      * @return Builder
      */
@@ -238,14 +236,12 @@ class Factory
      */
     public function getRootDse()
     {
-        $root = $this->query->newInstance()
-            ->in('')
-            ->read(true)
-            ->whereHas($this->schema->objectClass())
-            ->first();
+        $query = $this->newQuery();
+
+        $root = $query->in('')->read()->whereHas($this->schema->objectClass())->first();
 
         if ($root) {
-            return (new RootDse([], $this->query))
+            return (new RootDse([], $query))
                 ->setRawAttributes($root->getAttributes());
         }
     }
@@ -260,8 +256,30 @@ class Factory
      */
     public function __call($method, $parameters)
     {
-        $query = $this->query->newInstance();
+        return call_user_func_array([$this->newQuery(), $method], $parameters);
+    }
 
-        return call_user_func_array([$query, $method], $parameters);
+    /**
+     * Returns a new query grammar instance.
+     *
+     * @return Grammar
+     */
+    protected function newGrammar()
+    {
+        return new Grammar();
+    }
+
+    /**
+     * Returns a new query builder instance.
+     *
+     * @return Builder
+     */
+    protected function newBuilder()
+    {
+        $builder = new Builder($this->connection, $this->newGrammar(), $this->schema);
+
+        $builder->setCache($this->cache);
+
+        return $builder;
     }
 }

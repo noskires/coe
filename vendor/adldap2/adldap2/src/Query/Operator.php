@@ -35,7 +35,7 @@ class Operator
     public static $doesNotEqual = '!';
 
     /**
-     * The does not equal operator (alias)
+     * The does not equal operator (alias).
      *
      * @var string
      */
@@ -111,7 +111,6 @@ class Operator
      */
     public static function all()
     {
-        return (new ReflectionClass(new static()))
-            ->getStaticProperties();
+        return (new ReflectionClass(new static()))->getStaticProperties();
     }
 }

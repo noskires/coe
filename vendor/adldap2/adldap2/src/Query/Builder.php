@@ -3,13 +3,14 @@
 namespace Adldap\Query;
 
 use Closure;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
-use InvalidArgumentException;
+use Adldap\Adldap;
 use Adldap\Utilities;
 use Adldap\Models\Model;
-use Adldap\Schemas\SchemaInterface;
+use Illuminate\Support\Arr;
+use InvalidArgumentException;
 use Adldap\Schemas\ActiveDirectory;
+use Adldap\Schemas\SchemaInterface;
+use Adldap\Query\Events\QueryExecuted;
 use Adldap\Models\ModelNotFoundException;
 use Adldap\Connections\ConnectionInterface;
 
@@ -29,7 +30,7 @@ class Builder
      */
     public $filters = [
         'and' => [],
-        'or' => [],
+        'or'  => [],
         'raw' => [],
     ];
 
@@ -97,6 +98,27 @@ class Builder
     protected $nested = false;
 
     /**
+     * Determines whether the query should be cached.
+     *
+     * @var bool
+     */
+    protected $caching = false;
+
+    /**
+     * How long the query should be cached until.
+     *
+     * @var \DateTimeInterface|null
+     */
+    protected $cacheUntil = null;
+
+    /**
+     * Determines whether the query cache must be flushed.
+     *
+     * @var bool
+     */
+    protected $flushCache = false;
+
+    /**
      * The current connection instance.
      *
      * @var ConnectionInterface
@@ -116,6 +138,13 @@ class Builder
      * @var SchemaInterface
      */
     protected $schema;
+
+    /**
+     * The current cache instance.
+     *
+     * @var Cache|null
+     */
+    protected $cache;
 
     /**
      * Constructor.
@@ -184,6 +213,18 @@ class Builder
     }
 
     /**
+     * Sets the cache to store query results.
+     *
+     * @param Cache|null $cache
+     */
+    public function setCache(Cache $cache = null)
+    {
+        $this->cache = $cache;
+
+        return $this;
+    }
+
+    /**
      * Returns a new Query Builder instance.
      *
      * @param string $baseDn
@@ -202,15 +243,15 @@ class Builder
 
     /**
      * Returns a new nested Query Builder instance.
-     * 
+     *
      * @param Closure|null $closure
-     * 
+     *
      * @return $this
      */
     public function newNestedInstance(Closure $closure = null)
     {
         $query = $this->newInstance()->nested();
-        
+
         if ($closure) {
             call_user_func($closure, $query);
         }
@@ -221,7 +262,7 @@ class Builder
     /**
      * Returns the current query.
      *
-     * @return \Illuminate\Support\Collection|array
+     * @return Collection|array
      */
     public function get()
     {
@@ -237,6 +278,12 @@ class Builder
      */
     public function getQuery()
     {
+        // We need to ensure we have at least one filter, as
+        // no query results will be returned otherwise.
+        if (count(array_filter($this->filters)) === 0) {
+            $this->whereHas($this->schema->objectClass());
+        }
+
         return $this->grammar->compile($this);
     }
 
@@ -283,13 +330,13 @@ class Builder
     /**
      * Sets the DN to perform searches upon.
      *
-     * @param string|null $dn
+     * @param string|Model|null $dn
      *
      * @return Builder
      */
     public function setDn($dn = null)
     {
-        $this->dn = (string) $dn;
+        $this->dn = $dn instanceof Model ? $dn->getDn() : $dn;
 
         return $this;
     }
@@ -297,11 +344,11 @@ class Builder
     /**
      * Alias for setting the base DN of the query.
      *
-     * @param string $dn
+     * @param string|Model|null $dn
      *
      * @return Builder
      */
-    public function in($dn)
+    public function in($dn = null)
     {
         return $this->setDn($dn);
     }
@@ -325,18 +372,32 @@ class Builder
      *
      * @param string $query
      *
-     * @return \Illuminate\Support\Collection|array
+     * @return \Adldap\Query\Collection|array
      */
     public function query($query)
     {
-        $results = $this->connection->{$this->type}(
-            $this->getDn(),
-            $query,
-            $this->getSelects(),
-            $onlyAttributes = false,
-            $this->limit
-        );
+        $start = microtime(true);
 
+        // Here we will create the execution callback. This allows us
+        // to only execute an LDAP request if caching is disabled
+        // or if no cache of the given query exists yet.
+        $callback = function () use ($query) {
+            return $this->parse($this->run($query));
+        };
+
+        // If caching is enabled and we have a cache instance available,
+        // we will try to retrieve the cached results instead.
+        // Otherwise, we will simply execute the callback.
+        if ($this->caching && $this->cache) {
+            $results = $this->getCachedResponse($this->getCacheKey($query), $callback);
+        } else {
+            $results = $callback();
+        }
+
+        // Log the query.
+        $this->logQuery($this, $this->type, $this->getElapsedTime($start));
+
+        // Process & return the results.
         return $this->newProcessor()->process($results);
     }
 
@@ -349,10 +410,82 @@ class Builder
      *
      * @return Paginator
      */
-    public function paginate($perPage = 50, $currentPage = 0, $isCritical = true)
+    public function paginate($perPage = 1000, $currentPage = 0, $isCritical = true)
     {
         $this->paginated = true;
 
+        $start = microtime(true);
+
+        $query = $this->getQuery();
+
+        // Here we will create the pagination callback. This allows us
+        // to only execute an LDAP request if caching is disabled
+        // or if no cache of the given query exists yet.
+        $callback = function () use ($query, $perPage, $isCritical) {
+            return $this->runPaginate($query, $perPage, $isCritical);
+        };
+
+        // If caching is enabled and we have a cache instance available,
+        // we will try to retrieve the cached results instead.
+        if ($this->caching && $this->cache) {
+            $pages = $this->getCachedResponse($this->getCacheKey($query), $callback);
+        } else {
+            $pages = $callback();
+        }
+
+        // Log the query.
+        $this->logQuery($this, 'paginate', $this->getElapsedTime($start));
+
+        // Process & return the results.
+        return $this->newProcessor()->processPaginated($pages, $perPage, $currentPage);
+    }
+
+    /**
+     * Get the cached response or execute and cache the callback value.
+     *
+     * @param string  $key
+     * @param Closure $callback
+     *
+     * @return mixed
+     */
+    protected function getCachedResponse($key, Closure $callback)
+    {
+        if ($this->flushCache) {
+            $this->cache->delete($key);
+        }
+
+        return $this->cache->remember($key, $this->cacheUntil, $callback);
+    }
+
+    /**
+     * Runs the query operation with the given filter.
+     *
+     * @param string $filter
+     *
+     * @return resource
+     */
+    protected function run($filter)
+    {
+        return $this->connection->{$this->type}(
+            $this->getDn(),
+            $filter,
+            $this->getSelects(),
+            $onlyAttributes = false,
+            $this->limit
+        );
+    }
+
+    /**
+     * Runs the paginate operation with the given filter.
+     *
+     * @param string $filter
+     * @param int    $perPage
+     * @param bool   $isCritical
+     *
+     * @return array
+     */
+    protected function runPaginate($filter, $perPage, $isCritical)
+    {
         $pages = [];
 
         $cookie = '';
@@ -361,17 +494,16 @@ class Builder
             $this->connection->controlPagedResult($perPage, $isCritical, $cookie);
 
             // Run the search.
-            $resource = @$this->connection->search($this->getDn(), $this->getQuery(), $this->getSelects());
+            $resource = $this->run($filter);
 
             if ($resource) {
+                // If we have been given a valid resource, we will retrieve the next
+                // pagination cookie to send for our next pagination request.
                 $this->connection->controlPagedResultResponse($resource, $cookie);
 
-                // We'll collect each resource result into the pages array.
-                $pages[] = $resource;
+                $pages[] = $this->parse($resource);
             }
         } while (!empty($cookie));
-
-        $paginator = $this->newProcessor()->processPaginated($pages, $perPage, $currentPage);
 
         // Reset paged result on the current connection. We won't pass in the current $perPage
         // parameter since we want to reset the page size to the default '1000'. Sending '0'
@@ -379,7 +511,48 @@ class Builder
         // even though that is supposed to be the correct usage.
         $this->connection->controlPagedResult();
 
-        return $paginator;
+        return $pages;
+    }
+
+    /**
+     * Parses the given LDAP resource by retrieving its entries.
+     *
+     * @param resource $resource
+     *
+     * @return array
+     */
+    protected function parse($resource)
+    {
+        // Normalize entries. Get entries returns false on failure.
+        // We'll always want an array in this situation.
+        $entries = $this->connection->getEntries($resource) ?: [];
+
+        // Free up memory.
+        if (is_resource($resource)) {
+            $this->connection->freeResult($resource);
+        }
+
+        return $entries;
+    }
+
+    /**
+     * Returns the cache key.
+     *
+     * @param string $query
+     *
+     * @return string
+     */
+    protected function getCacheKey($query)
+    {
+        $key = $this->connection->getHost()
+            .$this->type
+            .$this->getDn()
+            .$query
+            .implode('', $this->getSelects())
+            .$this->limit
+            .$this->paginated;
+
+        return md5($key);
     }
 
     /**
@@ -393,6 +566,9 @@ class Builder
     {
         $results = $this->select($columns)->limit(1)->get();
 
+        // Since results may be returned inside an array if `raw()`
+        // is specified, then we'll use our array helper
+        // to retrieve the first result.
         return Arr::get($results, 0);
     }
 
@@ -405,7 +581,7 @@ class Builder
      *
      * @throws ModelNotFoundException
      *
-     * @return Model
+     * @return Model|array
      */
     public function firstOrFail($columns = [])
     {
@@ -426,11 +602,15 @@ class Builder
      * @param string       $value
      * @param array|string $columns
      *
-     * @return mixed
+     * @return Model|array|false
      */
     public function findBy($attribute, $value, $columns = [])
     {
-        return $this->whereEquals($attribute, $value)->first($columns);
+        try {
+            return $this->findByOrFail($attribute, $value, $columns);
+        } catch (ModelNotFoundException $e) {
+            return;
+        }
     }
 
     /**
@@ -444,7 +624,7 @@ class Builder
      *
      * @throws ModelNotFoundException
      *
-     * @return mixed
+     * @return Model|array
      */
     public function findByOrFail($attribute, $value, $columns = [])
     {
@@ -454,31 +634,74 @@ class Builder
     /**
      * Finds a record using ambiguous name resolution.
      *
-     * @param string|array $anr
+     * @param string|array $value
      * @param array|string $columns
      *
-     * @return mixed
+     * @return Model|array|null
      */
-    public function find($anr, $columns = [])
+    public function find($value, $columns = [])
     {
-        if (is_array($anr)) {
-            return $this->findMany($anr, $columns);
+        if (is_array($value)) {
+            return $this->findMany($value, $columns);
         }
 
-        return $this->findBy($this->schema->anr(), $anr, $columns);
+        // If we're not using ActiveDirectory, we can't use ANR. We'll make our own query.
+        if (!is_a($this->schema, ActiveDirectory::class)) {
+            return $this->prepareAnrEquivalentQuery($value)->first($columns);
+        }
+
+        return $this->findBy($this->schema->anr(), $value, $columns);
     }
 
     /**
      * Finds multiple records using ambiguous name resolution.
      *
-     * @param array $anrs
+     * @param array $values
      * @param array $columns
      *
-     * @return mixed
+     * @return \Adldap\Query\Collection|array
      */
-    public function findMany(array $anrs = [], $columns = [])
+    public function findMany(array $values = [], $columns = [])
     {
-        return $this->findManyBy($this->schema->anr(), $anrs, $columns);
+        $this->select($columns);
+
+        if (!is_a($this->schema, ActiveDirectory::class)) {
+            $query = $this;
+
+            foreach ($values as $value) {
+                $query->prepareAnrEquivalentQuery($value);
+            }
+
+            return $query->get();
+        }
+
+        return $this->findManyBy($this->schema->anr(), $values);
+    }
+
+    /**
+     * Creates an ANR equivalent query for LDAP distributions that do not support ANR.
+     *
+     * @param string $value
+     *
+     * @return Builder
+     */
+    protected function prepareAnrEquivalentQuery($value)
+    {
+        return $this->orFilter(function (self $query) use ($value) {
+            $locateBy = [
+                $this->schema->name(),
+                $this->schema->email(),
+                $this->schema->userId(),
+                $this->schema->lastName(),
+                $this->schema->firstName(),
+                $this->schema->commonName(),
+                $this->schema->displayName(),
+            ];
+
+            foreach ($locateBy as $attribute) {
+                $query->whereEquals($attribute, $value);
+            }
+        });
     }
 
     /**
@@ -488,7 +711,7 @@ class Builder
      * @param array  $values
      * @param array  $columns
      *
-     * @return mixed
+     * @return \Adldap\Query\Collection|array
      */
     public function findManyBy($attribute, array $values = [], $columns = [])
     {
@@ -503,19 +726,19 @@ class Builder
 
     /**
      * Finds a record using ambiguous name resolution.
-     * 
+     *
      * If a record is not found, an exception is thrown.
      *
-     * @param string       $anr
+     * @param string       $value
      * @param array|string $columns
      *
      * @throws ModelNotFoundException
      *
-     * @return mixed
+     * @return Model|array
      */
-    public function findOrFail($anr, $columns = [])
+    public function findOrFail($value, $columns = [])
     {
-        $entry = $this->find($anr, $columns);
+        $entry = $this->find($value, $columns);
 
         // Make sure we check if the result is an entry or an array before
         // we throw an exception in case the user wants raw results.
@@ -530,18 +753,18 @@ class Builder
     /**
      * Finds a record by its distinguished name.
      *
-     * @param string|array $dn
+     * @param string       $dn
      * @param array|string $columns
      *
      * @return bool|Model
      */
     public function findByDn($dn, $columns = [])
     {
-        return $this
-            ->setDn($dn)
-            ->read()
-            ->whereHas($this->schema->objectClass())
-            ->first($columns);
+        try {
+            return $this->findByDnOrFail($dn, $columns);
+        } catch (ModelNotFoundException $e) {
+            return;
+        }
     }
 
     /**
@@ -554,15 +777,27 @@ class Builder
      *
      * @throws ModelNotFoundException
      *
-     * @return Model
+     * @return Model|array
      */
     public function findByDnOrFail($dn, $columns = [])
     {
-        return $this
-            ->setDn($dn)
+        // Since we're setting our base DN to be able to retrieve a model
+        // by its distinguished name, we need to set it back to
+        // our configured base so it is not overwritten.
+        $base = $this->getDn();
+
+        $model = $this->setDn($dn)
             ->read()
             ->whereHas($this->schema->objectClass())
             ->firstOrFail($columns);
+
+        // Reset the models query builder (in case a model is returned).
+        // Otherwise, we must be requesting a raw result.
+        if ($model instanceof Model) {
+            $model->setQuery($this->in($base));
+        }
+
+        return $model;
     }
 
     /**
@@ -571,17 +806,15 @@ class Builder
      * @param string       $guid
      * @param array|string $columns
      *
-     * @return Model
+     * @return Model|array|false
      */
     public function findByGuid($guid, $columns = [])
     {
-        if ($this->schema->objectGuidRequiresConversion()) {
-            $guid = Utilities::stringGuidToHex($guid);
+        try {
+            return $this->findByGuidOrFail($guid, $columns);
+        } catch (ModelNotFoundException $e) {
+            return;
         }
-
-        return $this->select($columns)->whereRaw([
-            $this->schema->objectGuid() => $guid
-        ])->first();
     }
 
     /**
@@ -594,7 +827,7 @@ class Builder
      *
      * @throws ModelNotFoundException
      *
-     * @return mixed
+     * @return Model|array
      */
     public function findByGuidOrFail($guid, $columns = [])
     {
@@ -603,7 +836,7 @@ class Builder
         }
 
         return $this->select($columns)->whereRaw([
-            $this->schema->objectGuid() => $guid
+            $this->schema->objectGuid() => $guid,
         ])->firstOrFail();
     }
 
@@ -613,11 +846,15 @@ class Builder
      * @param string       $sid
      * @param array|string $columns
      *
-     * @return mixed
+     * @return Model|array|false
      */
     public function findBySid($sid, $columns = [])
     {
-        return $this->findBy($this->schema->objectSid(), $sid, $columns);
+        try {
+            return $this->findBySidOrFail($sid, $columns);
+        } catch (ModelNotFoundException $e) {
+            return;
+        }
     }
 
     /**
@@ -630,7 +867,7 @@ class Builder
      *
      * @throws ModelNotFoundException
      *
-     * @return mixed
+     * @return Model|array
      */
     public function findBySidOrFail($sid, $columns = [])
     {
@@ -786,7 +1023,7 @@ class Builder
 
         $field = $this->escape($field, $ignore = null, 3);
 
-        $this->filters[$boolean][] = compact('field', 'operator', 'value');
+        $this->addFilter($boolean, compact('field', 'operator', 'value'));
 
         return $this;
     }
@@ -894,6 +1131,23 @@ class Builder
     public function whereNotContains($field, $value)
     {
         return $this->where($field, Operator::$notContains, $value);
+    }
+
+    /**
+     * Query for entries that match any of the values provided for the given field.
+     *
+     * @param string $field
+     * @param array  $values
+     *
+     * @return Builder
+     */
+    public function whereIn($field, array $values)
+    {
+        return $this->orFilter(function (self $query) use ($field, $values) {
+            foreach ($values as $value) {
+                $query->whereEquals($field, $value);
+            }
+        });
     }
 
     /**
@@ -1180,6 +1434,53 @@ class Builder
     }
 
     /**
+     * Adds a filter onto the current query.
+     *
+     * @param string $type     The type of filter to add.
+     * @param array  $bindings The bindings of the filter.
+     *
+     * @throws InvalidArgumentException
+     *
+     * @return $this
+     */
+    public function addFilter($type, array $bindings)
+    {
+        // Here we will ensure we have been given a proper filter type.
+        if (!array_key_exists($type, $this->filters)) {
+            throw new InvalidArgumentException("Invalid filter type: {$type}.");
+        }
+
+        // The required filter key bindings.
+        $required = ['field', 'operator', 'value'];
+
+        // Here we will ensure the proper key bindings are given.
+        if (count(array_intersect_key(array_flip($required), $bindings)) !== count($required)) {
+            // Retrieve the keys that are missing in the bindings array.
+            $missing = implode(', ', array_diff($required, array_flip($bindings)));
+
+            throw new InvalidArgumentException("Invalid filter bindings. Missing: {$missing} keys.");
+        }
+
+        $this->filters[$type][] = $bindings;
+
+        return $this;
+    }
+
+    /**
+     * Clear the query builders filters.
+     *
+     * @return $this
+     */
+    public function clearFilters()
+    {
+        foreach ($this->filters as $type => $filters) {
+            $this->filters[$type] = [];
+        }
+
+        return $this;
+    }
+
+    /**
      * Returns true / false depending if the current object
      * contains selects.
      *
@@ -1277,8 +1578,7 @@ class Builder
     }
 
     /**
-     * Sets the recursive property to tell the search whether or
-     * not to return the LDAP results in their raw format.
+     * Whether to return the LDAP results in their raw format.
      *
      * @param bool $raw
      *
@@ -1292,8 +1592,7 @@ class Builder
     }
 
     /**
-     * Sets the nested property to tell the Grammar instance whether
-     * or not the current query is already nested.
+     * Whether the current query is nested.
      *
      * @param bool $nested
      *
@@ -1307,13 +1606,22 @@ class Builder
     }
 
     /**
-     * Returns true / false if the current query is nested.
+     * Enables caching on the current query until the given date.
      *
-     * @return bool
+     * If flushing is enabled, the query cache will be flushed and then re-cached.
+     *
+     * @param \DateTimeInterface $until When to expire the query cache.
+     * @param bool               $flush Whether to force-flush the query cache.
+     *
+     * @return $this
      */
-    public function isNested()
+    public function cache(\DateTimeInterface $until = null, $flush = false)
     {
-        return $this->nested === true;
+        $this->caching = true;
+        $this->cacheUntil = $until;
+        $this->flushCache = $flush;
+
+        return $this;
     }
 
     /**
@@ -1327,7 +1635,7 @@ class Builder
      */
     public function escape($value, $ignore = '', $flags = 0)
     {
-        return Utilities::escape($value, $ignore, $flags);
+        return ldap_escape($value, $ignore, $flags);
     }
 
     /**
@@ -1358,6 +1666,16 @@ class Builder
     public function getSortByFlags()
     {
         return $this->sortByFlags;
+    }
+
+    /**
+     * Returns true / false if the current query is nested.
+     *
+     * @return bool
+     */
+    public function isNested()
+    {
+        return $this->nested === true;
     }
 
     /**
@@ -1394,8 +1712,7 @@ class Builder
     }
 
     /**
-     * Handle dynamic method calls on the query builder
-     * object to be directed to the query processor.
+     * Handle dynamic method calls on the query builder object to be directed to the query processor.
      *
      * @param string $method
      * @param array  $parameters
@@ -1404,7 +1721,9 @@ class Builder
      */
     public function __call($method, $parameters)
     {
-        if (Str::startsWith($method, 'where')) {
+        // We'll check if the beginning of the method being called contains
+        // 'where'. If so, we'll assume it's a dynamic 'where' clause.
+        if (substr($method, 0, 5) === 'where') {
             return $this->dynamicWhere($method, $parameters);
         }
 
@@ -1415,7 +1734,7 @@ class Builder
      * Handles dynamic "where" clauses to the query.
      *
      * @param string $method
-     * @param string $parameters
+     * @param array  $parameters
      *
      * @return Builder
      */
@@ -1497,12 +1816,62 @@ class Builder
      */
     protected function addDynamic($segment, $connector, $parameters, $index)
     {
-        // Once we have parsed out the columns and formatted the boolean operators we
-        // are ready to add it to this query as a where clause just like any other
-        // clause on the query. Then we'll increment the parameter index values.
+        // We'll format the 'where' boolean and field here to avoid casing issues.
         $bool = strtolower($connector);
+        $field = strtolower($segment);
 
-        $this->where(Str::snake($segment), '=', $parameters[$index], $bool);
+        $this->where($field, '=', $parameters[$index], $bool);
+    }
+
+    /**
+     * Logs the given executed query information by firing its query event.
+     *
+     * @param Builder    $query
+     * @param string     $type
+     * @param null|float $time
+     */
+    protected function logQuery($query, $type, $time = null)
+    {
+        $args = [$query, $time];
+
+        switch ($type) {
+            case 'listing':
+                $event = new Events\Listing(...$args);
+                break;
+            case 'read':
+                $event = new Events\Read(...$args);
+                break;
+            case 'paginate':
+                $event = new Events\Paginate(...$args);
+                break;
+            default:
+                $event = new Events\Search(...$args);
+                break;
+        }
+
+        $this->fireQueryEvent($event);
+    }
+
+    /**
+     * Fires the given query event.
+     *
+     * @param QueryExecuted $event
+     */
+    protected function fireQueryEvent(QueryExecuted $event)
+    {
+        Adldap::getEventDispatcher()->fire($event);
+    }
+
+    /**
+     * Get the elapsed time since a given starting point.
+     *
+     * @param int $start
+     *
+     * @return float
+     */
+    protected function getElapsedTime($start)
+    {
+        return round((microtime(true) - $start) * 1000, 2);
     }
 
     /**

@@ -2,8 +2,16 @@
 
 namespace Adldap\Schemas;
 
-class FreeIPA extends BaseSchema
+class FreeIPA extends Schema
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function accountName()
+    {
+        return 'uid';
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -26,6 +34,14 @@ class FreeIPA extends BaseSchema
     public function objectClassGroup()
     {
         return 'ipausergroup';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function userPrincipalName()
+    {
+        return 'krbCanonicalName';
     }
 
     /**
@@ -63,6 +79,14 @@ class FreeIPA extends BaseSchema
     /**
      * {@inheritdoc}
      */
+    public function passwordLastSet()
+    {
+        return 'krbLastPwdChange';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function objectClassOu()
     {
         return 'organizationalunit';
@@ -79,9 +103,17 @@ class FreeIPA extends BaseSchema
     /**
      * {@inheritdoc}
      */
+    public function objectClassUser()
+    {
+        return 'organizationalPerson';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function objectGuid()
     {
-        return 'objectguid';
+        return 'ipaUniqueID';
     }
 
     /**
@@ -89,6 +121,6 @@ class FreeIPA extends BaseSchema
      */
     public function objectGuidRequiresConversion()
     {
-        return true;
+        return false;
     }
 }

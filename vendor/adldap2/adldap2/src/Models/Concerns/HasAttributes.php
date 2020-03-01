@@ -16,7 +16,9 @@ trait HasAttributes
     public $dateFormat = 'Y-m-d H:i:s';
 
     /**
-     * The format that is used to convert AD timestamps to unix timestamps.
+     * The format that is used to convert timestamps to unix timestamps.
+     *
+     * Currently set for compatibility with Active Directory.
      *
      * @var string
      */
@@ -28,7 +30,7 @@ trait HasAttributes
      * @var array
      */
     protected $attributes = [];
-    
+
     /**
      * The models original attributes.
      *
@@ -87,9 +89,12 @@ trait HasAttributes
      */
     public function getAttribute($key, $subKey = null)
     {
-        if (! $key) {
+        if (!$key) {
             return;
         }
+
+        // We'll normalize the given key to prevent case sensitivity issues.
+        $key = $this->normalizeAttributeKey($key);
 
         if (is_null($subKey) && $this->hasAttribute($key)) {
             return $this->attributes[$key];
@@ -189,7 +194,9 @@ trait HasAttributes
      */
     public function setRawAttributes(array $attributes = [])
     {
-        $this->attributes = $this->filterRawAttributes($attributes);
+        // We'll filter out those annoying 'count' keys returned with LDAP results,
+        // and lowercase all root array keys to prevent any casing issues.
+        $this->attributes = array_change_key_case($this->filterRawAttributes($attributes), CASE_LOWER);
 
         // We'll pull out the distinguished name from our raw attributes
         // and set it into our attributes array with the full attribute
@@ -247,6 +254,9 @@ trait HasAttributes
      */
     public function hasAttribute($key, $subKey = null)
     {
+        // Normalize key.
+        $key = $this->normalizeAttributeKey($key);
+
         if (is_null($subKey)) {
             return Arr::has($this->attributes, $key);
         }
@@ -285,8 +295,8 @@ trait HasAttributes
         $dirty = [];
 
         foreach ($this->attributes as $key => $value) {
-            if (! $this->originalIsEquivalent($key)) {
-                // We need to set reset the array's indices using array_values due to
+            if (!$this->originalIsEquivalent($key)) {
+                // We need to reset the array's indices using array_values due to
                 // LDAP requiring consecutive indices (0, 1, 2 etc.)
                 $dirty[$key] = array_values($value);
             }
@@ -316,7 +326,7 @@ trait HasAttributes
      */
     protected function originalIsEquivalent($key)
     {
-        if (! array_key_exists($key, $this->original)) {
+        if (!array_key_exists($key, $this->original)) {
             return false;
         }
 

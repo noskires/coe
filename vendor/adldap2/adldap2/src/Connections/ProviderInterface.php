@@ -9,13 +9,12 @@ use Adldap\Configuration\DomainConfiguration;
 interface ProviderInterface
 {
     /**
-      * Constructor.
-      *
-      * @param DomainConfiguration|array $configuration
-      * @param ConnectionInterface|null  $connection
-      * @param SchemaInterface|null      $schema
-      */
-    public function __construct($configuration, ConnectionInterface $connection, SchemaInterface $schema = null);
+     * Constructor.
+     *
+     * @param array|DomainConfiguration $configuration
+     * @param ConnectionInterface       $connection
+     */
+    public function __construct($configuration, ConnectionInterface $connection);
 
     /**
      * Returns the current connection instance.
@@ -61,6 +60,8 @@ interface ProviderInterface
      * Sets the current configuration.
      *
      * @param DomainConfiguration|array $configuration
+     *
+     * @throws \Adldap\Configuration\ConfigurationException
      */
     public function setConfiguration($configuration = []);
 
@@ -119,7 +120,8 @@ interface ProviderInterface
      * @param string|null $username
      * @param string|null $password
      *
-     * @throws \Adldap\Auth\BindException When binding to your LDAP server fails.
+     * @throws \Adldap\Auth\BindException If binding to the LDAP server fails.
+     * @throws ConnectionException        If upgrading the connection to TLS fails
      *
      * @return ProviderInterface
      */

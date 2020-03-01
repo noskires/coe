@@ -5,11 +5,9 @@ namespace Adldap\Models;
 use DateTime;
 
 /**
- * Class RootDse
+ * Class RootDse.
  *
  * Represents the LDAP connections Root DSE record.
- *
- * @package Adldap\Models
  */
 class RootDse extends Model
 {
@@ -22,8 +20,7 @@ class RootDse extends Model
     {
         $time = $this->getFirstAttribute($this->schema->currentTime());
 
-        return DateTime::createFromFormat($this->timestampFormat, $time)
-            ->getTimestamp();
+        return DateTime::createFromFormat($this->timestampFormat, $time)->getTimestamp();
     }
 
     /**
@@ -33,9 +30,7 @@ class RootDse extends Model
      */
     public function getCurrentTimeDate()
     {
-        return (new DateTime())
-            ->setTimestamp($this->getCurrentTime())
-            ->format($this->dateFormat);
+        return (new DateTime())->setTimestamp($this->getCurrentTime())->format($this->dateFormat);
     }
 
     /**

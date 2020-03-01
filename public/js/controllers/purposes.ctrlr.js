@@ -6,8 +6,8 @@
         .controller('PurposeEditModalInsatanceCtrl', PurposeEditModalInsatanceCtrl) 
         .controller('PurposeDeleteModalInsatanceCtrl', PurposeDeleteModalInsatanceCtrl) 
 
-        PurposesCtrl.$inject = ['PurposesSrvcs', 'TypesSrvcs', '$state', '$stateParams', '$uibModal', '$window'];
-        function PurposesCtrl(PurposesSrvcs, TypesSrvcs, $state, $stateParams, $uibModal, $window){
+        PurposesCtrl.$inject = ['PurposesSrvcs', 'TypesSrvcs', '$state', '$stateParams', '$uibModal', '$window', 'SweetAlert'];
+        function PurposesCtrl(PurposesSrvcs, TypesSrvcs, $state, $stateParams, $uibModal, $window, sweetAlert){
             var vm = this;
             var data = {}; 
  
@@ -22,8 +22,7 @@
             TypesSrvcs.list({type_code:''}).then (function (response) {
                 if(response.data.status == 200)
                 {
-                    vm.coeTypes = response.data.data;
-                    console.log(vm.coeTypes)
+                    vm.coeTypes = response.data.data; 
                 }
             }, function (){ alert('Bad Request!!!') })
 
@@ -52,7 +51,8 @@
                                         data: vm.purpose
                                     };
                                 }
-                            },
+                            }, 
+
                             size: 'lg'
                         });
                     }
@@ -93,49 +93,46 @@
             }
 
             vm.createPurposeBtn = function(data){
-                console.log(data);
 
                 PurposesSrvcs.store(data).then(function(response){
                     if (response.data.status == 200) {
-                        alert(response.data.message);
-
-                        PurposesSrvcs.list({purpose_code:'',type_code:''}).then (function (response) {
-                            if(response.data.status == 200)
-                            {
-                                vm.purposes = response.data.data;
-                                console.log(vm.purposes)
-                            }
-                        }, function (){ alert('Bad Request!!!') })
+                        sweetAlert.swal("Success!", "New purpose has successfully created!", "success");
+                        $state.reload();
                     }
                     else {
-                        alert(response.data.message);
+                        sweetAlert.swal(response.data.type+"!", response.data.message, response.data.type);
                     }
-                    console.log(response.data);
                 });
             }
         }
 
 
-        PurposeEditModalInsatanceCtrl.$inject = ['collection', 'PurposesSrvcs', '$state', '$uibModalInstance', '$window'];
-        function PurposeEditModalInsatanceCtrl (collection, PurposesSrvcs, $state, $uibModalInstance, $window) {
+        PurposeEditModalInsatanceCtrl.$inject = ['collection', 'PurposesSrvcs', '$state', '$uibModalInstance', '$window', 'SweetAlert'];
+        function PurposeEditModalInsatanceCtrl (collection, PurposesSrvcs, $state, $uibModalInstance, $window, sweetAlert) {
 
             var vm = this;
-            vm.collection = collection.data;
-            console.log(vm.collection)
+            vm.collection = collection.data; 
  
 
-            vm.updatePurposeBtn = function(data){
-                console.log(data);
+            vm.updatePurposeBtn = function(data){ 
                 PurposesSrvcs.update(data).then(function(response){
+                    // if (response.data.status == 200) {
+                    //     alert(response.data.message);
+                    //     $state.go('purposes');
+                    //     $uibModalInstance.close();
+                    // }
+                    // else {
+                    //     alert(response.data.message);
+                    // } 
                     if (response.data.status == 200) {
-                        alert(response.data.message);
+                        sweetAlert.swal("Success!", "Successfully updated!", "success");
+                        $state.reload();
                         $state.go('purposes');
                         $uibModalInstance.close();
                     }
                     else {
-                        alert(response.data.message);
+                        sweetAlert.swal(response.data.type+"!", response.data.message, response.data.type);
                     }
-                    console.log(response.data);
                 });
             };
 
@@ -143,8 +140,7 @@
                 $window.location.href = route;
             };
 
-            vm.close = function() {
-                // $uibModalInstance.close();
+            vm.close = function() { 
                 $uibModalInstance.close('testParameter');
             };
         }
@@ -153,11 +149,9 @@
         function PurposeDeleteModalInsatanceCtrl (collection, PurposesSrvcs, $state, $uibModalInstance, $window) {
 
             var vm = this;
-            vm.collection = collection.data;
-            console.log(vm.collection)
+            vm.collection = collection.data; 
 
-            vm.deletePurposeBtn = function(data){
-                console.log(data);
+            vm.deletePurposeBtn = function(data){ 
                 PurposesSrvcs.remove(data).then(function(response){
                     if (response.data.status == 200) {
                         alert(response.data.message);
@@ -166,8 +160,7 @@
                     }
                     else {
                         alert(response.data.message);
-                    }
-                    console.log(response.data);
+                    } 
                 });
             };
 

@@ -66,7 +66,6 @@ return array(
     'Complex\\' => array($vendorDir . '/markbaker/complex/classes/src'),
     'Barryvdh\\DomPDF\\' => array($vendorDir . '/barryvdh/laravel-dompdf/src'),
     'App\\' => array($baseDir . '/app'),
-    'Adldap\\Laravel\\' => array($vendorDir . '/adldap2/adldap2-laravel/src'),
     'Adldap\\' => array($vendorDir . '/adldap2/adldap2/src'),
     '' => array($vendorDir . '/nesbot/carbon/src'),
 );

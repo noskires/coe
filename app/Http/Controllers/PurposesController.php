@@ -85,6 +85,8 @@ class PurposesController extends Controller
                 $purpose = new Purpose;
                 $purpose->purpose_desc            = $fields['purpose_desc'];
                 $purpose->type_code               = $fields['type_code'];
+                $purpose->self_service            = $fields['self_service'];
+                $purpose->original_signature      = $fields['original_signature'];
                 $purpose->created_by              = Auth::user()->email;
                 $purpose->changed_by              = Auth::user()->email;
                 $purpose->save();

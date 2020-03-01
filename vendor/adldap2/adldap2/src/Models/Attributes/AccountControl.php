@@ -2,6 +2,8 @@
 
 namespace Adldap\Models\Attributes;
 
+use ReflectionClass;
+
 /**
  * The Account Control class.
  *
@@ -74,8 +76,7 @@ class AccountControl
     }
 
     /**
-     * Returns the account control integer as a string
-     * when the object is casted as a string.
+     * Get the value when casted to string.
      *
      * @return string
      */
@@ -85,8 +86,7 @@ class AccountControl
     }
 
     /**
-     * Returns the account control integer when
-     * the object is casted as an integer.
+     * Get the value when casted to int.
      *
      * @return int
      */
@@ -96,21 +96,59 @@ class AccountControl
     }
 
     /**
-     * Applies the specified flag.
+     * Add the value to the account control values.
+     *
+     * @param int $value
+     *
+     * @return AccountControl
+     */
+    public function add($value)
+    {
+        // Use the value as a key so if the same value
+        // is used, it will always be overwritten
+        $this->values[$value] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Remove the value from the account control.
+     *
+     * @param int $value
+     *
+     * @return $this
+     */
+    public function remove($value)
+    {
+        unset($this->values[$value]);
+
+        return $this;
+    }
+
+    /**
+     * Extract and apply the flag.
      *
      * @param int $flag
      */
     public function apply($flag)
     {
-        $flags = [];
+        $this->setValues($this->extractFlags($flag));
+    }
 
-        for ($i = 0; $i <= 26; $i++) {
-            if ((int) $flag & (1 << $i)) {
-                array_push($flags, 1 << $i);
-            }
-        }
+    /**
+     * Determine if the current AccountControl object contains the given UAC flag(s).
+     *
+     * @param int $flag
+     *
+     * @return bool
+     */
+    public function has($flag)
+    {
+        // We'll extract the given flag into an array of possible flags, and
+        // see if our AccountControl object contains any of them.
+        $flagsUsed = array_intersect($this->extractFlags($flag), $this->values);
 
-        $this->setValues($flags);
+        return in_array($flag, $flagsUsed);
     }
 
     /**
@@ -265,7 +303,7 @@ class AccountControl
      * The user cannot change the password. This is a permission on the user's object.
      *
      * For information about how to programmatically set this permission, visit the following link:
-     * 
+     *
      * @link http://msdn2.microsoft.com/en-us/library/aa746398.aspx
      *
      * @return AccountControl
@@ -359,23 +397,17 @@ class AccountControl
     }
 
     /**
-     * Returns the complete account control value.
+     * Get the account control value.
      *
      * @return int
      */
     public function getValue()
     {
-        $total = 0;
-
-        foreach ($this->values as $value) {
-            $total = $total + $value;
-        }
-
-        return $total;
+        return array_sum($this->values);
     }
 
     /**
-     * Returns the account control's values.
+     * Get the account control flag values.
      *
      * @return array
      */
@@ -385,7 +417,7 @@ class AccountControl
     }
 
     /**
-     * Sets the account control values.
+     * Set the account control values.
      *
      * @param array $flags
      */
@@ -395,18 +427,32 @@ class AccountControl
     }
 
     /**
-     * Applies the inserted value to the values property array.
+     * Get all possible account control flags.
      *
-     * @param int $value
-     *
-     * @return AccountControl
+     * @return array
      */
-    protected function add($value)
+    public function getAllFlags()
     {
-        // Use the value as a key so if the same value
-        // is used, it will always be overwritten
-        $this->values[$value] = $value;
+        return (new ReflectionClass(__CLASS__))->getConstants();
+    }
 
-        return $this;
+    /**
+     * Extracts the given flag into an array of flags used.
+     *
+     * @param int $flag
+     *
+     * @return array
+     */
+    public function extractFlags($flag)
+    {
+        $flags = [];
+
+        for ($i = 0; $i <= 26; $i++) {
+            if ((int) $flag & (1 << $i)) {
+                $flags[1 << $i] = 1 << $i;
+            }
+        }
+
+        return $flags;
     }
 }

@@ -2,8 +2,16 @@
 
 namespace Adldap\Schemas;
 
-class OpenLDAP extends BaseSchema
+class OpenLDAP extends Schema
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function accountName()
+    {
+        return 'uid';
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -72,6 +80,14 @@ class OpenLDAP extends BaseSchema
      * {@inheritdoc}
      */
     public function objectClassPerson()
+    {
+        return 'inetorgperson';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function objectClassUser()
     {
         return 'inetorgperson';
     }

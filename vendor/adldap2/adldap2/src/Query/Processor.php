@@ -2,10 +2,9 @@
 
 namespace Adldap\Query;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Adldap\Models\Entry;
 use Adldap\Models\Model;
+use InvalidArgumentException;
 use Adldap\Schemas\SchemaInterface;
 use Adldap\Connections\ConnectionInterface;
 
@@ -34,23 +33,19 @@ class Processor
     public function __construct(Builder $builder)
     {
         $this->builder = $builder;
-        $this->connection = $builder->getConnection();
         $this->schema = $builder->getSchema();
+        $this->connection = $builder->getConnection();
     }
 
     /**
      * Processes LDAP search results and constructs their model instances.
      *
-     * @param resource $results
+     * @param array $entries The LDAP entries to process.
      *
-     * @return array
+     * @return Collection|array
      */
-    public function process($results)
+    public function process($entries)
     {
-        // Normalize entries. Get entries returns false on failure.
-        // We'll always want an array in this situation.
-        $entries = $this->connection->getEntries($results) ?: [];
-
         if ($this->builder->isRaw()) {
             // If the builder is asking for a raw
             // LDAP result, we can return here.
@@ -59,7 +54,7 @@ class Processor
 
         $models = [];
 
-        if (Arr::has($entries, 'count')) {
+        if (array_key_exists('count', $entries)) {
             for ($i = 0; $i < $entries['count']; $i++) {
                 // We'll go through each entry and construct a new
                 // model instance with the raw LDAP attributes.
@@ -67,13 +62,19 @@ class Processor
             }
         }
 
-        if (!$this->builder->isPaginated()) {
-            // If the current query isn't paginated,
-            // we'll sort the models array here.
-            $models = $this->processSort($models);
+        // If the query contains paginated results, we'll return them here.
+        if ($this->builder->isPaginated()) {
+            return $models;
         }
 
-        return $models;
+        // If the query is requested to be sorted, we'll perform
+        // that here and return the resulting collection.
+        if ($this->builder->isSorted()) {
+            return $this->processSort($models);
+        }
+
+        // Otherwise, we'll return a regular unsorted collection.
+        return $this->newCollection($models);
     }
 
     /**
@@ -89,9 +90,9 @@ class Processor
     {
         $models = [];
 
-        foreach ($pages as $results) {
+        foreach ($pages as $entries) {
             // Go through each page and process the results into an objects array.
-            $models = array_merge($models, $this->process($results));
+            $models = array_merge($models, $this->process($entries));
         }
 
         $models = $this->processSort($models)->toArray();
@@ -110,13 +111,15 @@ class Processor
     {
         $objectClass = $this->schema->objectClass();
 
+        // We need to ensure the record contains an object class to be able to
+        // determine its type. Otherwise, we create a default Entry model.
         if (array_key_exists($objectClass, $attributes) && array_key_exists(0, $attributes[$objectClass])) {
             // Retrieve all of the object classes from the LDAP
             // entry and lowercase them for comparisons.
             $classes = array_map('strtolower', $attributes[$objectClass]);
 
             // Retrieve the model mapping.
-            $models = $this->map();
+            $models = $this->schema->objectClassModelMap();
 
             // Retrieve the object class mappings (with strtolower keys).
             $mappings = array_map('strtolower', array_keys($models));
@@ -144,13 +147,19 @@ class Processor
      * @param array       $attributes
      * @param string|null $model
      *
+     * @throws InvalidArgumentException
+     *
      * @return mixed|Entry
      */
     public function newModel($attributes = [], $model = null)
     {
-        $model = (class_exists($model) ? $model : Entry::class);
+        $model = (class_exists($model) ? $model : $this->schema->entryModel());
 
-        return new $model($attributes, $this->builder);
+        if (!is_subclass_of($model, $base = Model::class)) {
+            throw new InvalidArgumentException("The given model class '{$model}' must extend the base model class '{$base}'");
+        }
+
+        return new $model($attributes, $this->builder->newInstance());
     }
 
     /**
@@ -169,7 +178,7 @@ class Processor
     }
 
     /**
-     * Returns a new doctrine array collection instance.
+     * Returns a new collection instance.
      *
      * @param array $items
      *
@@ -178,24 +187,6 @@ class Processor
     public function newCollection(array $items = [])
     {
         return new Collection($items);
-    }
-
-    /**
-     * Returns the object class model class mapping.
-     *
-     * @return array
-     */
-    public function map()
-    {
-        return [
-            $this->schema->objectClassComputer()    => $this->schema->computerModel(),
-            $this->schema->objectClassContact()     => $this->schema->contactModel(),
-            $this->schema->objectClassPerson()      => $this->schema->userModel(),
-            $this->schema->objectClassGroup()       => $this->schema->groupModel(),
-            $this->schema->objectClassContainer()   => $this->schema->containerModel(),
-            $this->schema->objectClassPrinter()     => $this->schema->printerModel(),
-            $this->schema->objectClassOu()          => $this->schema->organizationalUnitModel(),
-        ];
     }
 
     /**
@@ -215,8 +206,6 @@ class Processor
 
         $desc = ($direction === 'desc' ? true : false);
 
-        return $this->newCollection($models)->sortBy(function (Model $model) use ($field) {
-            return $model->getFirstAttribute($field);
-        }, $flags, $desc);
+        return $this->newCollection($models)->sortBy($field, $flags, $desc);
     }
 }

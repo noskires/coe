@@ -237,6 +237,8 @@ interface SchemaInterface
      * value to be the first element in an array, however OpenLDAP expects
      * the dn attribute to contain the value, not an array.
      *
+     * @deprecated since 10.0.0
+     *
      * @return int|null
      */
     public function distinguishedNameSubKey();
@@ -391,7 +393,7 @@ interface SchemaInterface
 
     /**
      * Specifies the drive letter to which to map the UNC path specified by homeDirectory.
-     * 
+     *
      * @link https://msdn.microsoft.com/en-us/library/ms676191(v=vs.85).aspx
      *
      * @return string|null
@@ -400,12 +402,21 @@ interface SchemaInterface
 
     /**
      * The home directory for the account.
-     * 
+     *
      * @link https://msdn.microsoft.com/en-us/library/ms676190(v=vs.85).aspx
      *
      * @return string|null
      */
     public function homeDirectory();
+
+    /**
+     * The user's main home phone number.
+     *
+     * @link https://docs.microsoft.com/en-us/windows/desktop/ADSchema/a-homephone
+     *
+     * @return string|null
+     */
+    public function homePhone();
 
     /**
      * The users extra notable information.
@@ -435,6 +446,15 @@ interface SchemaInterface
      * @return string
      */
     public function instanceType();
+
+    /**
+     * Specifies the TCP/IP address for the phone. Used by telephony.
+     *
+     * @link https://msdn.microsoft.com/en-us/library/cc221092.aspx
+     *
+     * @return string
+     */
+    public function ipPhone();
 
     /**
      * If TRUE, the object hosting this attribute must be replicated during installation of a new replica.
@@ -544,6 +564,15 @@ interface SchemaInterface
     public function manager();
 
     /**
+     * The distinguished name of the user that is assigned to manage this object.
+     *
+     * @link https://docs.microsoft.com/en-us/windows/desktop/adschema/a-managedby
+     *
+     * @return string
+     */
+    public function managedBy();
+
+    /**
      * The maximum amount of time, in 100-nanosecond intervals, a password is valid.
      *
      * This value is stored as a large integer that represents the number of
@@ -564,6 +593,20 @@ interface SchemaInterface
      * @return string
      */
     public function member();
+
+    /**
+     * The identifier of records that belong to a group.
+     *
+     * For example, in ActiveDirectory, the 'member' attribute on
+     * a group record contains a list of distinguished names,
+     * so `distinguishedname` would be the identifier.
+     *
+     * In other environments such as Sun Directory
+     * Server, this identifier would be `uid`.
+     *
+     * @return string
+     */
+    public function memberIdentifier();
 
     /**
      * The distinguished names of the groups to which this object belongs.
@@ -589,7 +632,7 @@ interface SchemaInterface
     /**
      * The range limited list of users that belong to the group. See range limit in Active Directory
      * (Range Retrieval of Attribute Values https://msdn.microsoft.com/en-us/library/cc223242.aspx)
-     * Issue #342
+     * Issue #342.
      *
      * @link https://msdn.microsoft.com/en-us/library/ms677097(v=vs.85).aspx
      *
@@ -768,6 +811,13 @@ interface SchemaInterface
      * @return string
      */
     public function objectClassUser();
+
+    /**
+     * The object class model map.
+     *
+     * @return array
+     */
+    public function objectClassModelMap();
 
     /**
      * The unique identifier for an object.
@@ -1221,6 +1271,24 @@ interface SchemaInterface
     public function telephone();
 
     /**
+     * The primary mobile phone number.
+     *
+     * @link https://docs.microsoft.com/en-us/windows/desktop/adschema/a-mobile
+     *
+     * @return string
+     */
+    public function mobile();
+
+    /**
+     * The secondary mobile phone number.
+     *
+     * @link https://docs.microsoft.com/en-us/windows/desktop/ADSchema/a-othermobile
+     *
+     * @return string
+     */
+    public function otherMobile();
+
+    /**
      * The users thumbnail photo path.
      *
      * @return string
@@ -1310,6 +1378,13 @@ interface SchemaInterface
      * @return string
      */
     public function userModel();
+
+    /**
+     * The object classes that User models must be constructed with.
+     *
+     * @return array
+     */
+    public function userObjectClasses() : array;
 
     /**
      * This attribute contains the UPN that is an Internet-style login name for

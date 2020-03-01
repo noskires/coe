@@ -4,30 +4,30 @@ namespace Adldap\Models;
 
 use DateTime;
 use ArrayAccess;
-use JsonSerializable;
-use InvalidArgumentException;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 use Adldap\Utilities;
+use JsonSerializable;
 use Adldap\Query\Builder;
+use Illuminate\Support\Arr;
+use Adldap\Query\Collection;
+use InvalidArgumentException;
+use UnexpectedValueException;
 use Adldap\Models\Attributes\Sid;
 use Adldap\Models\Attributes\Guid;
-use Adldap\Models\Attributes\DistinguishedName;
 use Adldap\Schemas\SchemaInterface;
-use Adldap\Models\Concerns\HasAttributes;
+use Adldap\Models\Attributes\MbString;
 use Adldap\Connections\ConnectionException;
+use Adldap\Models\Attributes\DistinguishedName;
 
 /**
- * Class Model
+ * Class Model.
  *
- * Represents an LDAP record and provides the ability to
- * modify / retrieve data from the record.
- *
- * @package Adldap\Models
+ * Represents an LDAP record and provides the ability
+ * to modify / retrieve data from the record.
  */
 abstract class Model implements ArrayAccess, JsonSerializable
 {
-    use HasAttributes;
+    use Concerns\HasEvents,
+        Concerns\HasAttributes;
 
     /**
      * Indicates if the model exists.
@@ -63,11 +63,21 @@ abstract class Model implements ArrayAccess, JsonSerializable
      * @param array   $attributes
      * @param Builder $builder
      */
-    public function __construct(array $attributes = [], Builder $builder)
+    public function __construct(array $attributes, Builder $builder)
     {
         $this->setQuery($builder)
             ->setSchema($builder->getSchema())
             ->fill($attributes);
+    }
+
+    /**
+     * Returns the models distinguished name when the model is converted to a string.
+     *
+     * @return null|string
+     */
+    public function __toString()
+    {
+        return $this->getDn();
     }
 
     /**
@@ -123,7 +133,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      *
      * @param mixed $items
      *
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function newCollection($items = [])
     {
@@ -163,7 +173,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function offsetExists($offset)
     {
-        return isset($this->{$offset});
+        return !is_null($this->getAttribute($offset));
     }
 
     /**
@@ -175,7 +185,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function offsetGet($offset)
     {
-        return $this->{$offset};
+        return $this->getAttribute($offset);
     }
 
     /**
@@ -188,7 +198,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function offsetSet($offset, $value)
     {
-        $this->{$offset} = $value;
+        $this->setAttribute($offset, $value);
     }
 
     /**
@@ -200,7 +210,19 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function offsetUnset($offset)
     {
-        unset($this->{$offset});
+        unset($this->attributes[$offset]);
+    }
+
+    /**
+     * Determine if an attribute exists on the model.
+     *
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function __isset($key)
+    {
+        return $this->offsetExists($key);
     }
 
     /**
@@ -212,14 +234,12 @@ abstract class Model implements ArrayAccess, JsonSerializable
     {
         $attributes = $this->getAttributes();
 
-        $canDetect = extension_loaded('mbstring');
-
-        array_walk_recursive($attributes, function(&$val) use ($canDetect) {
-            if ($canDetect) {
+        array_walk_recursive($attributes, function (&$val) {
+            if (MbString::isLoaded()) {
                 // If we're able to detect the attribute
                 // encoding, we'll encode only the
                 // attributes that need to be.
-                if (! mb_detect_encoding($val, 'UTF-8', $strict = true)) {
+                if (!MbString::isUtf8($val)) {
                     $val = utf8_encode($val);
                 }
             } else {
@@ -234,7 +254,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
         // their string equivalents for convenience.
         return array_replace($attributes, [
             $this->schema->objectGuid() => $this->getConvertedGuid(),
-            $this->schema->objectSid() => $this->getConvertedSid(),
+            $this->schema->objectSid()  => $this->getConvertedSid(),
         ]);
     }
 
@@ -247,7 +267,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     {
         $model = $this->query->newInstance()->findByDn($this->getDn());
 
-        return $model instanceof Model ? $model : null;
+        return $model instanceof self ? $model : null;
     }
 
     /**
@@ -373,6 +393,40 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Returns the models distinguished name components.
+     *
+     * @param bool $removeAttributePrefixes
+     *
+     * @return array
+     */
+    public function getDnComponents($removeAttributePrefixes = true)
+    {
+        if ($components = Utilities::explodeDn($this->getDn(), $removeAttributePrefixes)) {
+            unset($components['count']);
+
+            return $components;
+        }
+
+        return [];
+    }
+
+    /**
+     * Returns the distinguished name that the model is a leaf of.
+     *
+     * @return string
+     */
+    public function getDnRoot()
+    {
+        $components = $this->getDnComponents(false);
+
+        // Shift off the beginning of the array;
+        // This contains the models RDN.
+        array_shift($components);
+
+        return implode(',', $components);
+    }
+
+    /**
      * Returns a new DistinguishedName object for building onto.
      *
      * @param string $baseDn
@@ -381,7 +435,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function getNewDnBuilder($baseDn = '')
     {
-        return new DistinguishedName($baseDn, $this->schema);
+        return new DistinguishedName($baseDn);
     }
 
     /**
@@ -475,7 +529,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Returns the model's name. An AD alias for the CN attribute.
+     * Returns the model's name. An LDAP alias for the CN attribute.
      *
      * @link https://msdn.microsoft.com/en-us/library/ms675449(v=vs.85).aspx
      *
@@ -545,6 +599,30 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Returns the model's userPrincipalName.
+     *
+     * @link https://docs.microsoft.com/en-us/windows/win32/adschema/a-userprincipalname
+     *
+     * @return string
+     */
+    public function getUserPrincipalName()
+    {
+        return $this->getFirstAttribute($this->schema->userPrincipalName());
+    }
+
+    /**
+     * Sets the model's userPrincipalName.
+     *
+     * @param string $upn
+     *
+     * @return Model
+     */
+    public function setUserPrincipalName($upn)
+    {
+        return $this->setFirstAttribute($this->schema->userPrincipalName(), $upn);
+    }
+
+    /**
      * Returns the model's samaccounttype.
      *
      * @link https://msdn.microsoft.com/en-us/library/ms679637(v=vs.85).aspx
@@ -585,7 +663,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function getCreatedAtTimestamp()
     {
-        return DateTime::createFromFormat('YmdHis.0Z', $this->getCreatedAt())->getTimestamp();
+        return DateTime::createFromFormat($this->timestampFormat, $this->getCreatedAt())->getTimestamp();
     }
 
     /**
@@ -691,6 +769,48 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
+     * Returns the distinguished name of the user who is assigned to manage this object.
+     *
+     * @return string|null
+     */
+    public function getManagedBy()
+    {
+        return $this->getFirstAttribute($this->schema->managedBy());
+    }
+
+    /**
+     * Returns the user model of the user who is assigned to manage this object.
+     *
+     * Returns false otherwise.
+     *
+     * @return User|bool
+     */
+    public function getManagedByUser()
+    {
+        if ($dn = $this->getManagedBy()) {
+            return $this->query->newInstance()->findByDn($dn);
+        }
+
+        return false;
+    }
+
+    /**
+     * Sets the user who is assigned to managed this object.
+     *
+     * @param Model|string $dn
+     *
+     * @return $this
+     */
+    public function setManagedBy($dn)
+    {
+        if ($dn instanceof self) {
+            $dn = $dn->getDn();
+        }
+
+        return $this->setFirstAttribute($this->schema->managedBy(), $dn);
+    }
+
+    /**
      * Returns the model's max password age.
      *
      * @return string
@@ -724,7 +844,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     public function inOu($ou, $strict = false)
     {
-        if ($ou instanceof Model) {
+        if ($ou instanceof self) {
             // If we've been given an OU model, we can
             // just check if the OU's DN is inside
             // the current models DN.
@@ -733,7 +853,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
 
         $suffix = $strict ? '' : 'i';
 
-        return (bool) preg_grep("/{$ou}/{$suffix}", $this->getDnBuilder()->organizationUnits);
+        return (bool) preg_grep("/{$ou}/{$suffix}", $this->getDnBuilder()->getComponents('ou'));
     }
 
     /**
@@ -750,19 +870,27 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * Saves the changes to LDAP and returns the results.
      *
-     * @param array $attributes
+     * @param array $attributes The attributes to update or create for the current entry.
      *
      * @return bool
      */
     public function save(array $attributes = [])
     {
-        return $this->exists ? $this->update($attributes) : $this->create($attributes);
+        $this->fireModelEvent(new Events\Saving($this));
+
+        $saved = $this->exists ? $this->update($attributes) : $this->create($attributes);
+
+        if ($saved) {
+            $this->fireModelEvent(new Events\Saved($this));
+        }
+
+        return $saved;
     }
 
     /**
      * Updates the model.
      *
-     * @param array $attributes
+     * @param array $attributes The attributes to update for the current entry.
      *
      * @return bool
      */
@@ -773,10 +901,14 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $modifications = $this->getModifications();
 
         if (count($modifications) > 0) {
+            $this->fireModelEvent(new Events\Updating($this));
+
             // Push the update.
             if ($this->query->getConnection()->modifyBatch($this->getDn(), $modifications)) {
                 // Re-sync attributes.
                 $this->syncRaw();
+
+                $this->fireModelEvent(new Events\Updated($this));
 
                 // Re-set the models modifications.
                 $this->modifications = [];
@@ -797,7 +929,9 @@ abstract class Model implements ArrayAccess, JsonSerializable
     /**
      * Creates the entry in LDAP.
      *
-     * @param array $attributes
+     * @param array $attributes The attributes for the new entry.
+     *
+     * @throws UnexpectedValueException
      *
      * @return bool
      */
@@ -806,24 +940,31 @@ abstract class Model implements ArrayAccess, JsonSerializable
         $this->fill($attributes);
 
         if (empty($this->getDn())) {
-            // If the model doesn't currently have a DN,
-            // we'll create a new one automatically.
-            $dn = $this->getDnBuilder();
+            // If the model doesn't currently have a distinguished
+            // name set, we'll create one automatically using
+            // the current query builders base DN.
+            $dn = $this->getCreatableDn();
 
-            // Then we'll add the entry's common name attribute.
-            $dn->addCn($this->getCommonName());
+            // If the dn we receive is the same as our queries base DN, we need
+            // to throw an exception. The LDAP object must have a valid RDN.
+            if ($dn->get() == $this->query->getDn()) {
+                throw new UnexpectedValueException("An LDAP object must have a valid RDN to be created. '$dn' given.");
+            }
 
-            // Set the new DN.
             $this->setDn($dn);
         }
+
+        $this->fireModelEvent(new Events\Creating($this));
 
         // Create the entry.
         $created = $this->query->getConnection()->add($this->getDn(), $this->getCreatableAttributes());
 
         if ($created) {
             // If the entry was created we'll re-sync
-            // the models attributes from AD.
+            // the models attributes from the server.
             $this->syncRaw();
+
+            $this->fireModelEvent(new Events\Created($this));
 
             return true;
         }
@@ -890,7 +1031,7 @@ abstract class Model implements ArrayAccess, JsonSerializable
      * Delete specific values in attributes:
      *
      *     ["memberuid" => "username"]
-     * 
+     *
      * Delete an entire attribute:
      *
      *     ["memberuid" => []]
@@ -924,11 +1065,13 @@ abstract class Model implements ArrayAccess, JsonSerializable
      * Throws a ModelNotFoundException if the current model does
      * not exist or does not contain a distinguished name.
      *
+     * @param bool $recursive Whether to recursively delete leaf nodes (models that are children).
+     *
      * @throws ModelDoesNotExistException
      *
      * @return bool
      */
-    public function delete()
+    public function delete($recursive = false)
     {
         $dn = $this->getDn();
 
@@ -938,10 +1081,22 @@ abstract class Model implements ArrayAccess, JsonSerializable
             throw (new ModelDoesNotExistException())->setModel(get_class($this));
         }
 
+        $this->fireModelEvent(new Events\Deleting($this));
+
+        if ($recursive) {
+            // If recursive is requested, we'll retrieve all direct leaf nodes
+            // by executing a 'listing' and delete each resulting model.
+            $this->newQuery()->listing()->in($this->getDn())->get()->each(function (self $model) use ($recursive) {
+                $model->delete($recursive);
+            });
+        }
+
         if ($this->query->getConnection()->delete($dn)) {
-            // We'll set the exists property to false on delete
-            // so the dev can run create operations.
+            // If the deletion was successful, we'll mark the model
+            // as non-existing and fire the deleted event.
             $this->exists = false;
+
+            $this->fireModelEvent(new Events\Deleted($this));
 
             return true;
         }
@@ -950,16 +1105,46 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Moves the current model to a new RDN and new parent.
+     * Moves the current model into the given new parent.
      *
-     * @param string      $rdn
-     * @param string|null $newParentDn
-     * @param bool|true   $deleteOldRdn
+     * For example: $user->move($ou);
+     *
+     * @param Model|string $newParentDn  The new parent of the current model.
+     * @param bool         $deleteOldRdn Whether to delete the old models relative distinguished name once renamed / moved.
      *
      * @return bool
      */
-    public function move($rdn, $newParentDn = null, $deleteOldRdn = true)
+    public function move($newParentDn, $deleteOldRdn = true)
     {
+        // First we'll explode the current models distinguished name and keep their attributes prefixes.
+        $parts = Utilities::explodeDn($this->getDn(), $removeAttrPrefixes = false);
+
+        // If the current model has an empty RDN, we can't move it.
+        if ((int) Arr::first($parts) === 0) {
+            throw new UnexpectedValueException('Current model does not contain an RDN to move.');
+        }
+
+        // Looks like we have a DN. We'll retrieve the leftmost RDN (the identifier).
+        $rdn = Arr::get($parts, 0);
+
+        return $this->rename($rdn, $newParentDn, $deleteOldRdn);
+    }
+
+    /**
+     * Renames the current model to a new RDN and new parent.
+     *
+     * @param string            $rdn          The models new relative distinguished name. Example: "cn=JohnDoe"
+     * @param Model|string|null $newParentDn  The models new parent distinguished name (if moving). Leave this null if you are only renaming. Example: "ou=MovedUsers,dc=acme,dc=org"
+     * @param bool|true         $deleteOldRdn Whether to delete the old models relative distinguished name once renamed / moved.
+     *
+     * @return bool
+     */
+    public function rename($rdn, $newParentDn = null, $deleteOldRdn = true)
+    {
+        if ($newParentDn instanceof self) {
+            $newParentDn = $newParentDn->getDn();
+        }
+
         $moved = $this->query->getConnection()->rename($this->getDn(), $rdn, $newParentDn, $deleteOldRdn);
 
         if ($moved) {
@@ -976,15 +1161,13 @@ abstract class Model implements ArrayAccess, JsonSerializable
     }
 
     /**
-     * Alias for the move method.
+     * Constructs a new distinguished name that is creatable in the directory.
      *
-     * @param string $rdn
-     *
-     * @return bool
+     * @return DistinguishedName|string
      */
-    public function rename($rdn)
+    protected function getCreatableDn()
     {
-        return $this->move($rdn);
+        return $this->getDnBuilder()->addCn($this->getCommonName());
     }
 
     /**
@@ -1054,15 +1237,13 @@ abstract class Model implements ArrayAccess, JsonSerializable
      */
     protected function validateSecureConnection()
     {
-        $connection = $this->query->getConnection();
-
-        if (!$connection->isUsingSSL() && !$connection->isUsingTLS()) {
+        if (!$this->query->getConnection()->canChangePasswords()) {
             throw new ConnectionException(
-                "You must be connected to your LDAP server with TLS or SSL to perform this operation."
+                'You must be connected to your LDAP server with TLS or SSL to perform this operation.'
             );
         }
     }
-    
+
     /**
      * Converts the inserted string boolean to a PHP boolean.
      *

@@ -1,87 +1,96 @@
-<div class="main">
-    <div class="container-fluid">
-        <!-- /# row -->
-        <section id="main-content"> 
-            <div class="row">    
-                <div class="col-lg-12">
+<div class="main-content-inner">
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-ml-12">
+            <div class="row">
+                <!-- Textual inputs start -->
+                <div class="col-3 mt-5">
                     <div class="card">
-                        <div class="card-title pr">
-                            <h4>Create New Purpose Type</h4>
-                        </div>
                         <div class="card-body">
-                            <form ng-model="employeeDetails">
+                            <h4 class="header-title">Create New Purpose Type</h4>
+                            <div class="form-group">
+                                <label class="col-form-label">Type of Certificate</label>
+                                <select class="form-control" ng-model="purposeDetails.type_code" style="width:95%" >
+                                    <option value=''>- - - SELECT TYPE - - - </option>  
+                                    <option ng-value='coeType.type_code' ng-repeat="coeType in purposeCtrl.coeTypes"><%coeType.type_desc%></option> 
+                                </select>
+                            </div> 
+                            <div class="form-group">
+                                <label class="col-form-label">Purpose Name</label>
+                                <input class="form-control form-control-md" ng-model="purposeDetails.purpose_desc" type="text">
+                            </div>
+                            <b class="text-muted mb-3 mt-4 d-block">Show in self survice</b>
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" checked id="selfservice_yes" name="selfservice" class="custom-control-input" value=1 ng-model="purposeDetails.self_service">
+                                <label class="custom-control-label" for="selfservice_yes">YES</label>
+                            </div>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="selfservice_no" name="selfservice" class="custom-control-input" value=0 ng-model="purposeDetails.self_service">
+                                <label class="custom-control-label" for="selfservice_no">NO</label>
+                            </div>
                                 
-                                <div class="form-row">
-                                    <div class="form-group col-md-3">
-                                        <label for="">Type</label>
-                                        <select class="form-control coe-type-selection" ng-model="purposeDetails.type_code" style="width:95%" >
-                                            <option value=''>- - - SELECT TYPE - - - </option>  
-                                            <option ng-value='coeType.type_code' ng-repeat="coeType in purposeCtrl.coeTypes"><%coeType.type_desc%></option> 
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-3">
-                                        <label for="">Purpose Name</label>
-                                        <input type="text" class="form-control" placeholder="Purpose Name" ng-model="purposeDetails.purpose_desc">
-                                    </div>
-                                </div>
-                                <br> 
-                                <button type="submit" class="btn btn-primary" ng-click="purposeCtrl.createPurposeBtn(purposeDetails)" style="margin-top:12px;">SUBMIT</button>
-                            </form>
-                            <br>
+                            <b class="text-muted mb-3 mt-4 d-block">Show in original signature</b>
+
+                            <input type="radio" id="general<%general.id%>" name="general" class="custom-control-input" ng-value="general.id" 
+                            ng-init="classificationsCtrl.collection.general=classificationsCtrl.collection.general||1" ng-model="classificationsCtrl.collection.general">
+
+                            <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" checked id="originalsignature_yes" name="originalsignature" class="custom-control-input" value=1 ng-model="purposeDetails.original_signature">
+                                <label class="custom-control-label" for="originalsignature_yes">YES</label>
+                            </div>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" checked id="originalsignature_no" name="originalsignature" class="custom-control-input" value=0 ng-model="purposeDetails.original_signature">
+                                <label class="custom-control-label" for="originalsignature_no">NO</label>
+                            </div>	 	
+                            <BR>	
+                            <button type="submit" class="btn btn-primary mt-4 pr-4 pl-4" ng-click="purposeCtrl.createPurposeBtn(purposeDetails)">Submit</button>
                         </div>
                     </div>
                 </div>
-                <!-- /# column -->
-            </div> 
-
-            <div class="row">    
-                <div class="col-lg-12">
+                <!-- Textual inputs end -->
+                <div class="col-9 mt-5">
                     <div class="card">
-                        <div class="card-title pr">
-                            <h4>COE Purposes</h4>
-                        </div>
                         <div class="card-body">
-                            <div class="table-responsive">
-                            <table datatable="ng" id="bootstrap-data-table-export" class="table table-striped table-bordered">
-                                    <thead>
+                            <!-- <h4 class="header-title">Table</h4> -->
+                            <div class="table-responsive data-tables datatable-dark">
+                                <table id="dataTable3" class="text-center" datatable="ng">
+                                    <thead class="text-capitalize">
                                         <tr>
                                             <th>Purpose Code</th>
                                             <th>COE Type</th>
                                             <th>Purpose Type</th>
-                                            <th>Show in self service</th>
+                                            <th>Show in self survice</th>
                                             <th>Show in original signature</th>
-                                            <th>Created By</th>
-                                            <th></th>
+                                            <th>Created by</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="purpose in purposeCtrl.purposes">
-                                            <td><%purpose.purpose_code%></td>
-                                            <td><%purpose.type_desc%></td>
-                                            <td><%purpose.purpose_desc%></td>
-                                            <td><%purpose.self_service%></td>
-                                            <td><%purpose.original_signature%></td>
-                                            <td><%purpose.created_by%></td> 
-                                            <td>
-                                                <a href="#" class="btn btn-primary btn-xs" ui-sref="purpose-edit({purpose_code_edit:purpose.purpose_code})">Edit</a>
-                                                <a href="#" class="btn btn-danger btn-xs" ui-sref="purpose-delete({purpose_code_delete:purpose.purpose_code})">Remove</a>
-                                            </td>
+                                            <td ng-bind="purpose.purpose_code"> </td>
+                                            <td ng-bind="purpose.type_desc"> </td>
+                                            <td ng-bind="purpose.purpose_desc"> </td>
+                                            <td ng-bind="purpose.self_service"> </td>
+                                            <td ng-bind="purpose.original_signature"> </td>
+                                            <td ng-bind="purpose.created_by"> </td> 
+                                            <td valign="middle"> <a href="#" title="edit" ui-sref="purpose-edit({purpose_code_edit:purpose.purpose_code})"> <i class="ti-pencil"></i> </a> | 
+                                                <a href="#" title="delete" ui-sref="purpose-delete({purpose_code_delete:purpose.purpose_code})"> <i class="ti-trash"></i> </a> </td>
                                         </tr>
+
                                     </tbody>
                                 </table>
                             </div>
+                
                         </div>
                     </div>
                 </div>
-                <!-- /# column -->
             </div>
-            <!-- /# row -->
-        </section>
+        </div>
+
     </div>
 </div>
 
+
 <script type="text/ng-template" id="edit-purpose-modal">
- 
     <div class="modal-header">
         <h3 class="modal-title" id="modal-title"><%purposeCtrl.collection.purpose_code%></h3>
     </div>
@@ -100,16 +109,16 @@
                                 <label for="">Show in self service</label>
                                 <select class="form-control" ng-model="purposeCtrl.collection.self_service" style="width:95%" >
                                     <option value=''>- - - SELECT - - - </option>  
-                                    <option value='1'>Yes</option> 
-                                    <option value='0'>No</option> 
+                                    <option ng-value='1'>Yes</option> 
+                                    <option ng-value='0'>No</option> 
                                 </select> 
                             </div>
                             <div class="form-group col-md-3">
                                 <label for="">Show in original signature</label>
                                 <select class="form-control" ng-model="purposeCtrl.collection.original_signature" style="width:95%" >
                                     <option value=''>- - - SELECT - - - </option>  
-                                    <option value='1'>Yes</option> 
-                                    <option value='0'>No</option> 
+                                    <option ng-value='1'>Yes</option> 
+                                    <option ng-value='0'>No</option> 
                                 </select>
                             </div>
                         </div>
@@ -120,8 +129,8 @@
     </form>
     </div>
     <div class="modal-footer">
-        <button type="submit" class="btn btn-primary" ng-click="purposeCtrl.updatePurposeBtn(purposeCtrl.collection)">SUBMIT</button>
-        <button type="submit" class="btn btn-warning" ng-click="purposeCtrl.close()" ui-sref="purposes">CANCEL</button>
+        <button type="submit" class="btn btn-xs btn-primary" ng-click="purposeCtrl.updatePurposeBtn(purposeCtrl.collection)">SUBMIT</button>
+        <button type="submit" class="btn btn-xs btn-warning" ng-click="purposeCtrl.close()" ui-sref="purposes">CANCEL</button>
     </div>
 </script>
 

@@ -69,9 +69,9 @@
                         <div> <h4 class="page-title-main pull-left">Certificate of Employment</h4> </div>
                     </div>
                     <!-- logout -->
-                    <div class="col-md-6 col-sm-4 ">
+                    <div class="col-md-6 col-sm-4">
                         <ul class="notification-area pull-right">
-                            <li class="settings-btn"> 
+                            <li class="settings-btn">
                                 <i class="ti-power-off"></i>
                             </li>
                         </ul>

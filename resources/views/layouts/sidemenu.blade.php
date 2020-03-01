@@ -18,8 +18,10 @@
                     <li>
                         <a href="javascript:void(0)" aria-expanded="true"><i class="ti-settings"></i><span>Setup</span></a>
                         <ul class="collapse">
-                            <li ui-sref="purposes"><a href="#"><i class="ti-comment"></i> <span>Create COE Purpose</span></a></li>
-                            <li ui-sref="types"><a href="#"><i class="ti-comments"></i> <span>Create COE Type</span></a></li>
+                            <li ui-sref="types"><a href="#"><i class="ti-comments"></i> <span>Types</span></a></li>
+                            <li ui-sref="purposes"><a href="#"><i class="ti-comment"></i> <span>Purpose</span></a></li>
+                            <li ui-sref="purposes"><a href="#"><i class="ti-comment"></i> <span>Admins</span></a></li>
+                            <li ui-sref="purposes"><a href="#"><i class="ti-comment"></i> <span>Fulfillers</span></a></li>
                         </ul>
                     </li>
                 </ul>
