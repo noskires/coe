@@ -11,6 +11,9 @@
 |
 */
 
+
+Route::get('/otp/samp', 'OtpController@samp');
+
 Route::get('/', function () {
     return view('welcome');
 });

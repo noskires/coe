@@ -2,16 +2,18 @@
 
 @section('content')
 
-    <script type="text/ng-template" id="selfservice.view">
-    @include('user.selfservice')
-    </script> 
+<script type="text/ng-template" id="selfservice.view">
+@include('user.selfservice')
+</script> 
 
-    <script type="text/ng-template" id="originalsignature.view">
-    @include('user.originalsignature')
-    </script> 
+<script type="text/ng-template" id="originalsignature.view">
+@include('user.originalsignature')
+</script> 
 
 
-    <!-- old -->
+ 
+
+<!-- old -->
 
 <script type="text/ng-template" id="fulfiller.view">
 @include('coe.fulfiller')

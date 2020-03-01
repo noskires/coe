@@ -15,6 +15,10 @@ use Illuminate\Support\Str;
 
 
 class OtpController extends Controller {
+
+    public function samp(){
+        return view('auth.otp');
+    }
  
     public function index(Request $request, $id){
         
