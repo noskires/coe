@@ -5,8 +5,8 @@
         .controller('CoeCtrl', CoeCtrl) 
         .controller('CoeViewModalInsatanceCtrl', CoeViewModalInsatanceCtrl) 
 
-        CoeCtrl.$inject = ['CoeSrvcs', 'PurposesSrvcs', 'TypesSrvcs', 'StatusItemsSrvcs', '$scope', '$state', '$stateParams', '$uibModal', '$window', '$http', '$timeout', '$compile', 'DTOptionsBuilder', 'DTColumnBuilder'];
-        function CoeCtrl(CoeSrvcs, PurposesSrvcs, TypesSrvcs, StatusItemsSrvcs, $scope, $state, $stateParams, $uibModal, $window, $http, $timeout, $compile, DTOptionsBuilder, DTColumnBuilder){
+        CoeCtrl.$inject = ['CoeSrvcs', 'PurposesSrvcs', 'TypesSrvcs', 'StatusItemsSrvcs', '$scope', '$state', '$stateParams', '$uibModal', '$window', '$http', '$timeout', '$compile', 'DTOptionsBuilder', 'DTColumnBuilder', 'SweetAlert'];
+        function CoeCtrl(CoeSrvcs, PurposesSrvcs, TypesSrvcs, StatusItemsSrvcs, $scope, $state, $stateParams, $uibModal, $window, $http, $timeout, $compile, DTOptionsBuilder, DTColumnBuilder, sweetAlert){
             var vm = this;
             var data = {};  
             
@@ -16,8 +16,6 @@
                 {id:0, text:"SHOW SALARY"},
                 {id:1, text:"CONFIDENTIAL"}
             ];
-
-         
             
             vm.render = function(data) {
                 return ' <a href="#" title="Print Preview" ng-click="CoeCtrl.printCoeBtn(\'' + data + '\');"> <i class="ti-printer"></i> </a>';
@@ -114,23 +112,20 @@
             }
 
             vm.createCoeBtn = function(data){
-                
+            
                 data['is_self_service'] = 1;
 
-                console.log(data);
-
-                CoeSrvcs.store(data).then(function(response){
+                 CoeSrvcs.store(data).then(function(response){
                     if (response.data.status == 200) {
-                        alert(response.data.message);
-                    
+                        sweetAlert.swal("Success!", "You may now view and print your COE!", "success");
                         $state.reload();
-
                     }
                     else {
-                        alert(response.data.message);
+                        sweetAlert.swal(response.data.type+"!", response.data.message, response.data.type);
                     }
                     console.log(response.data);
                 });
+
             }
  
 

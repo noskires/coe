@@ -6,6 +6,7 @@
           'ngSanitize',
           'ui.bootstrap',
           'datatables',
+          'oitozero.ngSweetAlert',
         ])
         .config(Config)
         .controller('MainCtrl', MainCtrl)

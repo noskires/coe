@@ -52,3 +52,12 @@
 
     </div>
 </div>
+
+languages
+<table>
+<tr ng-repeat="d in CoeCtrl.datas">
+    <td> a </td>
+    <td> <%d%> </td>
+    <td> <a href="#" ng-click="CoeCtrl.removeLanguage(d)"> remove </a> </td>
+</tr>
+</table>

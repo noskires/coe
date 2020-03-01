@@ -271,7 +271,7 @@ class CoeController extends Controller
         $fields = Input::post();
 
         $transaction = DB::transaction(function($field) use($fields){
-        // try{
+        try{
 
             if($fields['is_self_service']==2){
                 $employee_code = explode("-", $fields['employee_code']);
@@ -351,15 +351,13 @@ class CoeController extends Controller
             }
             
             $isExist = $isExist->count();
-
-            
-
          
             if($isExist>0){
                 return response()->json([
                     'status' => 500,
                     'data' => null,
-                    'message' => 'Duplicate request.'
+                    'message' => 'Duplicate request.',
+                    'type' => 'warning',
                 ]);
             }else{
 
@@ -486,20 +484,22 @@ class CoeController extends Controller
                 'status' => 200,
                 'data' => null,
                 'message' => 'Successfully saved.',
-                'employee' => $employee
+                // 'employee' => $employee,
+                'type' => 'success',
             ]);
 
             }
             
-        // }
-        // catch (\Exception $e) 
-        // {
-        //   return response()->json([
-        //     'status' => 500,
-        //     'data' => null,
-        //     'message' => 'Error, please try again!'
-        //   ]);
-        // }
+        }
+        catch (\Exception $e) 
+        {
+          return response()->json([
+            'status' => 500,
+            'data' => null,
+            'message' => 'Error, please try again!',
+            'type' => 'error',
+          ]);
+        }
 
         });
 
