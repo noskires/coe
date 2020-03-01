@@ -21,17 +21,6 @@ class LoginController extends Controller {
 
     use MailTrait;
 
-    // public function login(Request $request){
-
-    //     $credentials = $request->only('email', 'password');
-
-    //     if (Auth::attempt($credentials)) {
-    //         // Authentication passed...  
-    //         return redirect('self-service/'.Crypt::encrypt(Auth::user()->email));
-    //     }else{ 
-    //         return redirect('login')->with('status', 'Incorrect username or password!');
-    //     }
-    // }
 
     public function login(Request $request){
         
