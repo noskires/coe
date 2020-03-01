@@ -34,7 +34,7 @@ class OtpController extends Controller {
     }
 
     public function verify(Request $request){
-        
+         
         $user = User::where('email', Auth::user()->email)
         ->where('otp', $request->otp)->first();
         

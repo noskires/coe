@@ -10,7 +10,7 @@
                 getRemainingTime: function(data) {
                     return $http({
                         method: 'GET',
-                        url: '/online-coe/api/v1/get-remaining-time',
+                        url: 'api/v1/get-remaining-time',
                         data: data,
                         headers: {'Content-Type': 'application/json'}
                     })

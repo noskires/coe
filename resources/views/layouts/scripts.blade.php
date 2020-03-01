@@ -35,6 +35,12 @@
 <script type="text/javascript" src="{{URL::to('public/node_modules/angular-sweetalert/SweetAlert.min.js')}}"></script>
 <script type="text/javascript" src="{{URL::to('public/node_modules/sweetalert/dist/sweetalert.min.js')}}"></script> 
 
+<!-- Datepicker -->
+<script type="text/javascript" src="{{URL::to('public/node_modules/ui-date/dist/date.js')}}"></script>
+
+<!-- Timer -->
+<script src="{{URL::to('public/node_modules/angular-timer/dist/assets/js/angular-timer-all.min.js')}}"></script> 
+<script src="{{URL::to('public/node_modules/moment.js')}}"></script> 
 
 <!-- Main App -->
 <script src="{{URL::to('public/js/coeApp.js')}}"></script>

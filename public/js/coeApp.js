@@ -7,6 +7,7 @@
           'ui.bootstrap',
           'datatables',
           'oitozero.ngSweetAlert',
+          'timer',
         ])
         .config(Config)
         .controller('MainCtrl', MainCtrl)

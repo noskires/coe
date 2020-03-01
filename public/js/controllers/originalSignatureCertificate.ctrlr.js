@@ -5,13 +5,13 @@
         .controller('OriginalSignatureCertCtrl', OriginalSignatureCertCtrl) 
         .controller('OriginalSignatureCertViewModalInsatanceCtrl', OriginalSignatureCertViewModalInsatanceCtrl) 
 
-        OriginalSignatureCertCtrl.$inject = ['CoeSrvcs', 'PurposesSrvcs', 'TypesSrvcs', '$state', '$stateParams', '$uibModal', '$window', '$http', '$timeout'];
-        function OriginalSignatureCertCtrl(CoeSrvcs, PurposesSrvcs, TypesSrvcs, $state, $stateParams, $uibModal, $window, $http, $timeout){
+        OriginalSignatureCertCtrl.$inject = ['CoeSrvcs', 'PurposesSrvcs', 'TypesSrvcs', '$state', '$stateParams', '$uibModal', '$window', '$http', '$timeout', '$scope', '$compile', 'DTOptionsBuilder', 'DTColumnBuilder', 'SweetAlert'];
+        function OriginalSignatureCertCtrl(CoeSrvcs, PurposesSrvcs, TypesSrvcs, $state, $stateParams, $uibModal, $window, $http, $timeout, $scope, $compile, DTOptionsBuilder, DTColumnBuilder, sweetAlert){
+            
             var vm = this;
-            var data = {}; 
+            var data = {};
             vm.is_salary_option = 1;
  
-             
             TypesSrvcs.list({type_code:'', is_self_service:'NO'}).then (function (response) {
                 if(response.data.status == 200)
                 {
@@ -23,6 +23,41 @@
             vm.salary_options = [
                 {id:0, text:"SHOW SALARY"},
                 {id:1, text:"CONFIDENTIAL"}
+            ];
+
+            vm.render = function(data) {
+                return ' <a href="#" title="Print Preview" ng-click="coeCtrl.printCoeBtn(\'' + data + '\');"> <i class="ti-printer"></i> </a>';
+            }
+
+            vm.coeData = {
+                coe_code:'',
+                request_type:'ORIGINAL SIGNATURE',
+                is_fulfiller:'NO', 
+                is_all_request:'NO',
+                is_encrypted:'NO'
+            }
+
+            vm.dtOptions = DTOptionsBuilder.newOptions()
+                .withOption('ajax', {
+                url: 'api/v2/coe?coe_code='+vm.coeData.coe_code+'&request_type='+vm.coeData.request_type+'&is_fulfiller='+vm.coeData.is_fulfiller+
+                    '&is_all_request='+vm.coeData.is_all_request+'&is_encrypted='+vm.coeData.is_encrypted,
+                type: 'GET'
+            }) 
+            .withDataProp('data')
+                .withOption('processing', true)
+                .withOption('serverSide', true)
+                .withOption('responsive', true)
+                .withPaginationType('full_numbers');
+            vm.dtColumns = [
+                // DTColumnBuilder.newColumn('id').withTitle('#'),
+                DTColumnBuilder.newColumn('coe_code').withTitle('Reference'),
+                DTColumnBuilder.newColumn('type_desc').withTitle('Type'),
+                DTColumnBuilder.newColumn('purpose_desc').withTitle('Purpose'),
+                DTColumnBuilder.newColumn('is_salary_confidential01').withTitle('Salary Option'),
+                DTColumnBuilder.newColumn('coe_code').withTitle('').renderWith(vm.render)
+                .withOption('createdCell', function(cell, cellData, rowData, rowIndex, colIndex) {
+                    $compile(angular.element(cell).contents())($scope);
+                }), 
             ];
 
             vm.coeData = {

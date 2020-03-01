@@ -6,6 +6,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>Login-COE</title>
     @include('layouts.styles')
+ 
+    <base href="/online-coe-dev/">
+     
+     
 </head>
 
 <body>

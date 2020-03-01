@@ -19,6 +19,8 @@ trait TimerTrait
         $data['diff_in_seconds']        = $data['to']->diffInSeconds($data['from']);
         $data['diff_in_milliseconds']   = $data['diff_in_seconds']*1000;
         $data['remaining_time']         = 180 - $data['diff_in_seconds'];
+
+     
         return $data;
     }
  

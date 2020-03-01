@@ -11,8 +11,9 @@
 |
 */
 
-
 Route::get('/otp/samp', 'OtpController@samp');
+
+Route::get('/api/v1/get-remaining-time', 'CoeController@getRemainingTime');
 
 Route::get('/', function () {
     return view('welcome');

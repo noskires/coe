@@ -204,8 +204,7 @@ class CoeController extends Controller
             'coe.date_hired',
             'coe.employee_subgroup', 
             'coe.personnel_area',
-            'coe.position',
-            'coe.salary',
+            'coe.position', 
             'coe.coe_type',
             'coe.is_with_logo',
             'coe.is_salary_confidential',
@@ -522,12 +521,16 @@ class CoeController extends Controller
     }
 
     public function getRemainingTime(){
-
+        // return 1000;
+        
         return response()->json([
             'status' => 200,
+            // 'data' => 1000,
             'data' => $this->diffInTime(),
             'message' => ''
         ]);
+
+
 
     }
 }
