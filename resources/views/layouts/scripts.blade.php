@@ -1,5 +1,6 @@
 <!-- jquery latest version -->
-<script src="{{URL::to('public/assets/js/vendor/jquery-2.2.4.min.js')}}"></script>
+<!-- <script src="{{URL::to('public/assets/js/vendor/jquery-2.2.4.min.js')}}"></script> -->
+<script src="{{URL::to('public/assets/js/vendor/jquery-3.2.1.min.js')}}"></script>
 <!-- <script src="{{URL::to('public/assets/js/jquery.min.js')}}"></script> -->
 <!-- bootstrap 4 js -->
 <script src="{{URL::to('public/assets/js/popper.min.js')}}"></script>
@@ -41,6 +42,16 @@
 <!-- Timer -->
 <script src="{{URL::to('public/node_modules/angular-timer/dist/assets/js/angular-timer-all.min.js')}}"></script> 
 <script src="{{URL::to('public/node_modules/moment.js')}}"></script> 
+
+<!-- for otp page -->
+<script src="{{URL::to('public/assets/js/cleave.min.js')}}"></script>
+<script type="text/javascript">
+    var cleave = new Cleave('.input-otp', {
+        delimiter: '·',
+        blocks: [1, 1, 1, 1, 1, 1],
+        uppercase: true
+    });
+</script>
 
 <!-- Main App -->
 <script src="{{URL::to('public/js/coeApp.js')}}"></script>

@@ -49,7 +49,7 @@
     width: 100%;
     height: 100%;
     min-height: 100vh;
-    padding-left: 240px;
+    padding-left: 280px;
     -webkit-transition: padding-left 0.3s ease 0s;
     transition: padding-left 0.3s ease 0s;
 }
@@ -99,7 +99,7 @@
     top: 0;
     z-index: 99;
     height: 100vh;
-    width: 240px;
+    width: 280px;
     overflow: hidden;
     background: #303641;
     box-shadow: 2px 0 32px rgba(0, 0, 0, 0.05);
@@ -108,7 +108,7 @@
 }
 
 .sbar_collapsed .sidebar-menu {
-    left: -240px;
+    left: -280px;
 }
 
 .main-menu {
@@ -2344,7 +2344,7 @@ table.dataTable thead td {
 
 .login-form-head p {
     color: #fff;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 22px;
 }
 
@@ -2529,6 +2529,17 @@ table.dataTable thead td {
     background: url(../images/bg/singin-bg-1.jpg) center/cover no-repeat;
     position: relative;
 }
+
+.otp-bg {
+    background: url(../images/bg/singin-bg-black.jpg) center/cover no-repeat;
+    position: relative;
+}
+
+.input-otp {
+	font-size: 20px;
+	letter-spacing: 20px;
+	text-align: center;
+}	
 
 .login-bg:before {
     content: '';
