@@ -110,7 +110,6 @@
                                 <br> 
                                 <button type="submit" class="btn btn-danger" ng-click="coeCtrl.updateCoeOriginalSigBtn(coeCtrl.coe)" style="margin-top:12px;">SUBMIT</button>
                             </form>
-
                         </div> 
                 </div> 
             </div>

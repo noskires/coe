@@ -32,8 +32,7 @@
                                             <td ng-bind="coe.coe_code"><%coe.coe_code%></td>
                                             <td ng-bind="coe.employee_code"><%coe.employee_code%></td>
                                             <td ng-bind="coe.name"><%coe.name%></td>
-                                            <td ng-bind="coe.type_desc"><%coe.type_desc%></td>
-                                            <!-- <td><%coe.is_with_logo%></td>  -->
+                                            <td ng-bind="coe.type_desc"><%coe.type_desc%></td> 
                                             <td ng-bind="coe.purpose_desc | uppercase"><%coe.purpose_desc | uppercase%></td> 
                                             <td ng-bind="coe.is_salary_confidential01 | uppercase"><%coe.is_salary_confidential01 | uppercase%></td> 
                                             <td ng-bind="coe.created_at | uppercase"><%coe.created_at | uppercase%></td> 

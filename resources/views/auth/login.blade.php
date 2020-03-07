@@ -7,7 +7,7 @@
         <div class="login-box ptb--100">
             <form class="form-horizontal" method="POST" action="auth1">
                 {{ csrf_field() }}
-                
+ 
                 <div class="login-form-head">
                     <h4>Sign In</h4>
                     <p>Hello there, Sign in and start managing <br> your Certificate of Employment</p>
@@ -15,7 +15,7 @@
                 <div class="login-form-body">
                     <div class="form-gp">
                         <label for="exampleInputEmail1">Email address</label> 
-                        <input id="email" type="email" class="form-control" name="email" value="{{ old('email') }}" required autofocus>
+                        <input id="email" type="email" class="form-control" name="email" autocomplete="off" value="{{ old('email') }}" required autofocus>
                         <i class="ti-email"></i>
                         <div class="text-danger"></div>
                     </div>
@@ -27,19 +27,10 @@
                     </div>
                     <div class="row mb-12 rmber-area">
                         @if (session('status')!='')
-                            <div class="" style="text-align:center; color:red;">
-                                <b>{{ session('status') }}</b> 
+                            <div class="" style="text-align:center; color:#8655FC;">
+                            <h5> {{ session('status') }} </h5>
                             </div>
-                        @endif
-                        <!-- <div class="col-6">
-                            <div class="custom-control custom-checkbox mr-sm-2">
-                                <input type="checkbox" class="custom-control-input" id="customControlAutosizing">
-                                <label class="custom-control-label" for="customControlAutosizing">Remember Me</label>
-                            </div>
-                        </div> -->
-                        <!-- <div class="col-6 text-right">
-                            <a href="#">Forgot Password?</a>
-                        </div> -->
+                        @endif 
                     </div>
                     <br>
                     <div class="submit-btn-area">

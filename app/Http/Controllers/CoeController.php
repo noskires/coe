@@ -52,7 +52,7 @@ class CoeController extends Controller
 
         try {
             $data['coe_code'] = Crypt::decrypt($id);
-            return view('layout.index', $data); 
+            return view('layouts.index', $data); 
 
         } catch (DecryptException $e) {
             return redirect('self-service/'.Crypt::encrypt(Auth::user()->email)); 
@@ -61,14 +61,13 @@ class CoeController extends Controller
     }
 
     public function coe_details_admin($id){
-
         try {
 
             $decrypted = decrypt($id);
 
             if(Auth::user()->is_admin==1){
                 $data['coe_code'] = Crypt::decrypt($id);
-                return view('layout.index', $data); 
+                return view('layouts.index', $data); 
             }else{
                 return redirect('coe-details/'.$id); 
             }
@@ -198,8 +197,8 @@ class CoeController extends Controller
             // DB::raw("row_number() OVER (ORDER BY coe.created_at DESC) as v_id"),
             'coe.coe_code',
             'coe.employee_code', 
-            DB::raw("CONCAT(rtrim(CONCAT(coe.last_name,' ',COALESCE(coe.affix,''))),', ', COALESCE(coe.first_name,''),' ', COALESCE(coe.middle_name,'')) as name"),
-            DB::raw("CONCAT(rtrim(CONCAT(coe.last_name,' ',COALESCE(coe.affix,''))),', ', COALESCE(coe.first_name,''),' ', COALESCE(coe.middle_name,'')) as name2"),
+            \DB::raw("CONCAT(rtrim(CONCAT(coe.last_name,' ',COALESCE(coe.affix,''))),', ', COALESCE(coe.first_name,''),' ', COALESCE(coe.middle_name,'')) as name"),
+            // DB::raw("CONCAT(rtrim(CONCAT(coe.last_name,' ',COALESCE(coe.affix,''))),', ', COALESCE(coe.first_name,''),' ', COALESCE(coe.middle_name,'')) as name2"),
             'coe.organization',
             'coe.date_hired',
             'coe.employee_subgroup', 
@@ -211,25 +210,13 @@ class CoeController extends Controller
             'coe.gender',
             'coe.employee_group',
             'coe.is_self_service',
-            DB::raw("CASE WHEN coe.employee_group = 'PLDT Regular' THEN 'regular' WHEN coe.employee_group = 'PLDT Probationary' THEN 'probationary' ELSE '' END employee_group_type01"),
-            DB::raw("CASE WHEN coe.gender = 'Male' THEN 'he' WHEN coe.gender = 'Female' THEN 'she' ELSE 'Unknown' END as gender_type01"),
-            DB::raw("CASE WHEN coe.gender = 'Male' THEN 'him' WHEN coe.gender = 'Female' THEN 'her' ELSE 'Unknown' END as gender_type02"),
-            DB::raw("CASE WHEN coe.gender = 'Male' THEN 'his' WHEN coe.gender = 'Female' THEN 'her' ELSE 'Unknown' END as gender_type03"),
-            DB::raw("CASE WHEN coe.is_salary_confidential = '0' THEN 'SHOW SALARY' ELSE 'CONFIDENTIAL' END as is_salary_confidential01"),
-            DB::raw("CAST(coe.salary as decimal(10,2)) as salary"),
-            DB::raw("CAST(coe.uslp as decimal(10,2)) as uslp"),
-            DB::raw("CAST(coe.mid_year_bon as decimal(10,2)) as mid_year_bon"),
-            DB::raw("CAST(coe.longevity_bon as decimal(10,2)) as longevity_bon"),
-            DB::raw("CAST(coe.christmas_bon as decimal(10,2)) as christmas_bon"),
-            DB::raw("CAST(coe.allowances as decimal(10,2)) as allowances"),
-            DB::raw("CAST(coe.other_bon as decimal(10,2)) as other_bon"),
-            DB::raw("CAST(coe.total_bon as decimal(10,2)) as total_bon"),
-            'type.type_desc',
+            DB::raw("CASE WHEN coe.is_salary_confidential = '0' THEN 'SHOW SALARY' ELSE 'CONFIDENTIAL' END AS is_salary_confidential01"),
+            DB::raw("type.type_desc AS type_desc"), 
+            DB::raw("purpose.purpose_desc AS purpose_desc"), 
             'coe.created_by',
             'coe.changed_by',
             'coe.created_at',
-            'coe.updated_at',
-            'purpose.purpose_desc' 
+            'coe.updated_at'
         )
         ->leftjoin('purposes as purpose','purpose.purpose_code','=','coe.coe_purpose')
         ->leftjoin('coe_types as type','type.type_code','=','purpose.type_code');
@@ -255,13 +242,63 @@ class CoeController extends Controller
                 }else{
                     $collection = $collection->where('coe.created_by', Auth::user()->email);
                 }
-                
             }
         }else{
             $collection = $collection->where('coe.created_by', Auth::user()->email);
         }
  
-        return DataTables::of($collection)->make(true);
+        $dtables = DataTables::eloquent($collection)
+        ->filterColumn('name', function($query, $keyword) {
+            $sql = "CONCAT(rtrim(CONCAT(coe.last_name,' ',COALESCE(coe.affix,''))),', ', COALESCE(coe.first_name,''),' ', COALESCE(coe.middle_name,''))  like ?";
+            $query->whereRaw($sql, ["%{$keyword}%"]);
+        })
+        ->filterColumn('is_salary_confidential01', function($query, $keyword) {
+            $sql = "CASE WHEN coe.is_salary_confidential = '0' THEN 'SHOW SALARY' ELSE 'CONFIDENTIAL' END  like ?";
+            $query->whereRaw($sql, ["%{$keyword}%"]);
+        })
+        ->filterColumn('type_desc', function($query, $keyword) {
+            $sql = "type_desc like ?";
+            $query->whereRaw($sql, ["%{$keyword}%"]);
+        })
+        ->filterColumn('purpose_desc', function($query, $keyword) {
+            $sql = "purpose_desc like ?";
+            $query->whereRaw($sql, ["%{$keyword}%"]);
+        });
+
+     
+        
+        return $dtables->toJson();
+
+    }
+
+    public function show_dtables3(Request $request){
+
+        $data['coe_code'] = 'eHR-1216-19-100002-CEC';
+
+        $collection = Coe::with('purpose');
+
+        // $collection = Coe::defaultFields()->whereFields($data)
+
+        // ->with(['purpose'=>function($query) use ($request){
+
+        //     $query->defaultFields();
+            
+        // }]);
+  
+        // return DataTables::of($collection)->make(true);
+
+        // $dtables = DataTables::eloquent($collection)
+        // ->filterColumn('is_salary_confidential01', function($query, $keyword) {
+        //     $sql = "CASE WHEN coe.is_salary_confidential = '0' THEN 'SHOW SALARY' ELSE 'CONFIDENTIAL' END  like ?";
+        //     $query->whereRaw($sql, ["%{$keyword}%"]);
+        // })
+        // ->addColumn('purpose', function (Coe $coe) {
+        //     return $coe->purposes->map(function($purpose) {
+        //         return str_limit($purpose->purpose_desc, 30, '...');
+        //     })->implode('<br>');
+        // });
+ 
+        // return $dtables->toJson();
 
     }
 

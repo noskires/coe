@@ -17,7 +17,7 @@ use Carbon\Carbon;
 class ExportToExcelController extends Controller {
 
 	public function index(){
-		return view('layout.index');
+		return view('layouts.index');
 	}
 
     public function exportEmployees(){

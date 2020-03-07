@@ -1,6 +1,6 @@
 <!-- jquery latest version -->
-<!-- <script src="{{URL::to('public/assets/js/vendor/jquery-2.2.4.min.js')}}"></script> -->
-<script src="{{URL::to('public/assets/js/vendor/jquery-3.2.1.min.js')}}"></script>
+<script src="{{URL::to('public/assets/js/vendor/jquery-2.2.4.min.js')}}"></script>
+<!-- <script src="{{URL::to('public/assets/js/jquery-3.2.1.min.js')}}"></script> -->
 <!-- <script src="{{URL::to('public/assets/js/jquery.min.js')}}"></script> -->
 <!-- bootstrap 4 js -->
 <script src="{{URL::to('public/assets/js/popper.min.js')}}"></script>
@@ -43,13 +43,17 @@
 <script src="{{URL::to('public/node_modules/angular-timer/dist/assets/js/angular-timer-all.min.js')}}"></script> 
 <script src="{{URL::to('public/node_modules/moment.js')}}"></script> 
 
+<!-- Select2 -->
+<script type="text/javascript" src="{{URL::to('public/node_modules/select2/dist/js/select2.full.js')}}"></script>
+<script type="text/javascript" src="{{URL::to('public/node_modules/angular-select2/dist/angular-select2.js')}}"></script>
+
 <!-- for otp page -->
 <script src="{{URL::to('public/assets/js/cleave.min.js')}}"></script>
 <script type="text/javascript">
     var cleave = new Cleave('.input-otp', {
         delimiter: '·',
         blocks: [1, 1, 1, 1, 1, 1],
-        uppercase: true
+        uppercase: false
     });
 </script>
 
@@ -61,7 +65,7 @@
 <script src="{{URL::to('public/js/controllers/coe.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/coeDetails.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/originalSignatureCertificate.ctrlr.js')}}"></script>
-<script src="{{URL::to('public/js/controllers/fulfillers.ctrlr.js')}}"></script>
+<script src="{{URL::to('public/js/controllers/assignedtome.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/walkin.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/allRequests.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/purposes.ctrlr.js')}}"></script>

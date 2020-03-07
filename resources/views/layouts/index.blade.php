@@ -11,16 +11,18 @@
 </script> 
 
 
- 
-
 <!-- old -->
 
-<script type="text/ng-template" id="fulfiller.view">
-@include('coe.fulfiller')
-</script> 
+<script type="text/ng-template" id="fulfiller_assigned_to_me.view">
+@include('fulfiller.fulfiller_assigned_to_me')
+</script>
+
+<script type="text/ng-template" id="fulfiller_all_request.view">
+@include('fulfiller.fulfiller_all_request')
+</script>
 
 <script type="text/ng-template" id="walkin.view">
-@include('coe.walkin')
+@include('walkin.walkin')
 </script> 
 
 <script type="text/ng-template" id="coe.view">

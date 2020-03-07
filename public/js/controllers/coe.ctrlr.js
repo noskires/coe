@@ -4,7 +4,7 @@
         .module('coeApp')
         .controller('CoeCtrl', CoeCtrl) 
         .controller('CoeViewModalInsatanceCtrl', CoeViewModalInsatanceCtrl) 
-
+        
         CoeCtrl.$inject = ['CoeSrvcs', 'PurposesSrvcs', 'TypesSrvcs', 'StatusItemsSrvcs', '$scope', '$state', '$stateParams', '$uibModal', '$window', '$http', '$timeout', '$compile', 'DTOptionsBuilder', 'DTColumnBuilder', 'SweetAlert'];
         function CoeCtrl(CoeSrvcs, PurposesSrvcs, TypesSrvcs, StatusItemsSrvcs, $scope, $state, $stateParams, $uibModal, $window, $http, $timeout, $compile, DTOptionsBuilder, DTColumnBuilder, sweetAlert){
             var vm = this;
@@ -12,13 +12,14 @@
             
             vm.is_salary_option = 1;
             vm.is_hide = 0;
+            
             vm.salary_options = [
                 {id:0, text:"SHOW SALARY"},
                 {id:1, text:"CONFIDENTIAL"}
             ];
             
             vm.render = function(data) {
-                return ' <a href="#" title="Print Preview" ng-click="CoeCtrl.printCoeBtn(\'' + data + '\');"> <i class="ti-printer"></i> </a>';
+                return ' <a href="#" title="Print Preview" ng-click="CoeCtrl.printCoeBtn(\'' + data + '\');"> <i class="fa fa-lg fa-print"></i> <span>Print</span></a> ';
             }
 
             vm.coeData = {
@@ -42,11 +43,12 @@
                 .withPaginationType('full_numbers');
             vm.dtColumns = [
                 // DTColumnBuilder.newColumn('id').withTitle('#'),
+                // DTColumnBuilder.newColumn('name').withTitle('Name'),
                 DTColumnBuilder.newColumn('coe_code').withTitle('Reference'),
                 DTColumnBuilder.newColumn('type_desc').withTitle('Type'),
                 DTColumnBuilder.newColumn('purpose_desc').withTitle('Purpose'),
                 DTColumnBuilder.newColumn('is_salary_confidential01').withTitle('Salary Option'),
-                DTColumnBuilder.newColumn('coe_code').withTitle('').renderWith(vm.render)
+                DTColumnBuilder.newColumn('coe_code').withTitle('Action').renderWith(vm.render)
                 .withOption('createdCell', function(cell, cellData, rowData, rowIndex, colIndex) {
                     $compile(angular.element(cell).contents())($scope);
                 }), 

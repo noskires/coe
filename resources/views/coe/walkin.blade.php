@@ -105,6 +105,7 @@
 <script type="text/javascript">
 
     $(function() {
+        alert('asdf')
 
         $(".select2").select2({
             ajax: {

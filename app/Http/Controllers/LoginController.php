@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Crypt;
 use Illuminate\Support\Str;
 use Config;
+use Session;
 
 //Traits
 use App\Traits\MailTrait;
@@ -20,7 +21,6 @@ use App\Traits\MailTrait;
 class LoginController extends Controller {
 
     use MailTrait;
-
 
     public function login(Request $request){
         
@@ -55,7 +55,6 @@ class LoginController extends Controller {
             // be a full distinguished name of the user account.
             'username' => $request->email,
             'password' => $request->password,
-        
             ];
 
             // Add a connection provider to Adldap.
@@ -64,6 +63,7 @@ class LoginController extends Controller {
             try {
                 //  If a successful connection is made to your server, the provider will be returned.
                 $provider   = $ad->connect();
+                Session::put('key', Crypt::encrypt($request->password));
                 $user       = User::where('email', $request->email)->first();
                 if(count($user)>0){
                     Auth::login($user);
@@ -74,15 +74,12 @@ class LoginController extends Controller {
                 else{
                     return redirect('login')->with('status', 'Access denied!');
                 }
-                
             } catch (\Adldap\Auth\BindException $e) {
                 // echo "Invalid account";
                 return redirect('login')->with('status', 'Login failed; Invalid email or password.');
                 // There was an issue binding / connecting to the server.
             }
-
         }
-
     }
 
     public function logout(Request $request){
@@ -94,7 +91,7 @@ class LoginController extends Controller {
         $fields['email'] = $email;
 
         $transaction = DB::transaction(function($field) use($fields){
-        // try{
+        try{
 
                 $user = User::where('email', $fields['email'])->first();
                 $user->otp                  = Str::random(6);
@@ -111,15 +108,15 @@ class LoginController extends Controller {
                     'message' => 'Successfully saved.'
                 ]);
 
-            // }
-            // catch (\Exception $e) 
-            // {
-            //     return response()->json([
-            //         'status' => 500,
-            //         'data' => null,
-            //         'message' => 'Error, please try again!'
-            //     ]);
-            // }
+            }
+            catch (\Exception $e) 
+            {
+                return response()->json([
+                    'status' => 500,
+                    'data' => null,
+                    'message' => 'Error, please try again!'
+                ]);
+            }
         });
 
         return $transaction;

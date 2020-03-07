@@ -11,7 +11,7 @@
                     return $http({
                         method: 'GET',
                         data: data,
-                        url: '/transmittal/api/v1/audits?id='+data.id,
+                        url: 'api/v1/audits?id='+data.id,
                         headers: {'Content-Type': 'application/json'}
                     })
                 }

@@ -8,6 +8,7 @@
           'datatables',
           'oitozero.ngSweetAlert',
           'timer',
+          'rt.select2',
         ])
         .config(Config)
         .controller('MainCtrl', MainCtrl)
@@ -27,22 +28,11 @@
                 controller: 'CoeCtrl as coeCtrl',
                 templateUrl: 'coe.view'
             };
-
-            // dynamicNumberStrategyProvider.addStrategy('price', {
-            //     numInt: 12,
-            //     numFract: 2,
-            //     numSep: '.',
-            //     numPos: true,
-            //     numNeg: true,
-            //     numRound: 'round',
-            //     numThousand: true
-            // });
-            
+ 
             $stateProvider
             .state('main-view', main)
 
             //-- COE --//
-            
             .state('selfservice', {
                 url: '/self-service',
                 controller: 'CoeCtrl as CoeCtrl',
@@ -58,32 +48,48 @@
             .state('index', {
                 url: '/self-service/:id',
                 controller: 'CoeCtrl as CoeCtrl',
-                // templateUrl: 'coe.view'
                 templateUrl: 'selfservice.view'
             })
             
             .state('original-signature', {
                 url: '/original-signature/:id',
                 controller: 'OriginalSignatureCertCtrl as coeCtrl',
-                // templateUrl: 'coe.view'
+                templateUrl: 'originalsignature.view'
+            })
+
+            .state('original-signature-details', {
+                url: '/original-signature/details/:coe_code',
+                controller: 'OriginalSignatureCertCtrl as coeCtrl',
                 templateUrl: 'originalsignature.view'
             })
 
             .state('assigned-to-me', {
                 url: '/assigned-to-me/:id',
-                controller: 'FulfillerCtrl as coeCtrl',
-                templateUrl: 'fulfiller.view'
+                controller: 'AssignedToMeCtrl as AssignedToMeCtrl',
+                templateUrl: 'fulfiller_assigned_to_me.view'
             })
+
+            .state('assigned-to-me-details', {
+                url: '/assigned-to-me/details/:coe_code',
+                controller: 'AssignedToMeCtrl as AssignedToMeCtrl',
+                templateUrl: 'fulfiller_assigned_to_me.view'
+            })
+
+            // .state('assigned-to-me', {
+            //     url: '/all-request/:id',
+            //     controller: 'AllRequestCtrl as AllRequestCtrl',
+            //     templateUrl: 'fulfiller_all_request.view'
+            // })
 
             .state('all-request', {
                 url: '/all-request/:id',
-                controller: 'AllRequestCtrl as coeCtrl',
-                templateUrl: 'fulfiller.view'
+                controller: 'AllRequestCtrl as AllRequestCtrl',
+                templateUrl: 'fulfiller_all_request.view'
             })
 
             .state('walk-in', {
                 url: '/walk-in/:id',
-                controller: 'WalkinCtrl as coeCtrl',
+                controller: 'WalkinCtrl as WalkinCtrl',
                 templateUrl: 'walkin.view'
             })
             
@@ -127,17 +133,17 @@
 
             .state('types', {
                 url: '/types',
-                controller: 'TypesCtrl as typeCtrl',
+                controller: 'TypesCtrl as TypeCtrl',
                 templateUrl: 'type.view'
             }) 
             .state('type-edit', {
                 url: '/type/:type_code_edit/edit',
-                controller: 'TypesCtrl as typeCtrl',
+                controller: 'TypesCtrl as TypeCtrl',
                 templateUrl: 'type.view'
             })
             .state('type-delete', {
                 url: '/type/:type_code_delete/delete',
-                controller: 'TypesCtrl as typeCtrl',
+                controller: 'TypesCtrl as TypeCtrl',
                 templateUrl: 'type.view'
             })
 

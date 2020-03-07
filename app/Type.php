@@ -13,4 +13,16 @@ class Type extends Model implements Auditable
     protected $primaryKey = 'id';
     protected $table = "coe_types";
 
+    public function scopeDefaultFields($query){
+        
+    	$query->select(
+            'id',
+            'type_code',
+            'type_desc',
+            'created_by',
+            'changed_by',
+            'created_at',
+            'updated_at'
+        );
+    }
 }

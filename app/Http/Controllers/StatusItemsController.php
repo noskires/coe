@@ -17,7 +17,6 @@ use App\Purpose;
 use App\Status; 
 
 
-
 //Traits
 use App\Traits\TimerTrait;
 use App\Traits\MailTrait;
@@ -117,10 +116,9 @@ class StatusItemsController extends Controller
                 $otherDetails['type_desc']      = $type->type_desc;
                 $otherDetails['purpose_desc']   = $purpose->purpose_desc;
                 $otherDetails['remarks']        = $fields['remarks'];
-                $otherDetails['updated_at']     = Carbon::now(); 
+                $otherDetails['updated_at']     = Carbon::now();
                 $otherDetails['request_status'] = $status->short_desc;
 
-             
                 $this->sendReplyLink($coe, $otherDetails);
 
                 return response()->json([

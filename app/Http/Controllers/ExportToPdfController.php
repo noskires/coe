@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use PDF;
 use Response;
+use Session;
 
 class ExportToPdfController extends Controller {
 
@@ -23,14 +24,16 @@ class ExportToPdfController extends Controller {
         }
         
         if($data['coe']){
+
+            $pword = Crypt::decrypt(Session::get('key'));
+
             if($data['coe']->type_desc == "CERTIFICATE OF EMPLOYMENT AND COMPENSATION"){
-               
                 $pdf = PDF::loadView('coe.cec_print', $data)->setPaper('Letter');
-                $pdf->setEncryption('erikson');
+                $pdf->setEncryption($pword);
                 return $pdf->stream('coe.cec_print.pdf');
             }elseif($data['coe']->type_desc == "CERTIFICATE OF EMPLOYMENT"){
                 $pdf = PDF::loadView('coe.coe_print', $data)->setPaper('Letter');
-                $pdf->setEncryption('erikson');
+                $pdf->setEncryption($pword);
                 return $pdf->stream('coe.coe_print.pdf');
             }else{
                 return "COE Type is not defined.";

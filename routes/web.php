@@ -10,8 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/otp/samp', 'OtpController@samp');
+ 
 
 Route::get('/api/v1/get-remaining-time', 'CoeController@getRemainingTime');
 
@@ -25,9 +24,6 @@ Route::get('/orig-sig', 'CoeController@index2');
 
 Route::get('/coe', 'CoeController@index');
 Route::get('/coe/{coe_code}', 'CoeController@index');
-
-
-
 
 Route::post('/auth1', 'LoginController@login');
 Route::post('/verifyOTP', 'OtpController@verify');
@@ -43,21 +39,26 @@ Route::get('/index','LoginController@logout');
 
 Route::get('/self-service/{id}','CoeController@index');
 Route::get('/original-signature/{id}','CoeController@index');
+Route::get('/original-signature/details/{id}','CoeController@coe_details');
+
+// fulfiller
 Route::get('/assigned-to-me/{id}','CoeController@index');
+Route::get('/assigned-to-me/details/{id}','CoeController@coe_details');
+
 Route::get('/all-request/{id}','CoeController@index');
 Route::get('/walk-in/{id}','CoeController@index');
-
 Route::get('/otp/{id}', 'OtpController@index');
 Route::get('/coe-details/{id}','CoeController@coe_details');
 Route::get('/coe-details-admin/{id}','CoeController@coe_details_admin');
 
 // COE API
-
 Route::get('/coe', 'CoeController@index');
 Route::get('/coe/{coe_code}', 'CoeController@index');
 
 Route::get('/api/v1/coe', 'CoeController@show');
 Route::get('/api/v2/coe', 'CoeController@show_dtables');
+Route::get('/api/v3/coe', 'CoeController@show_dtables3');
+
 Route::post('/api/v1/coe/store', 'CoeController@store');
 Route::post('/api/v1/coe/update', 'CoeController@store');
 
@@ -92,8 +93,9 @@ Route::post('/api/v1/type/remove', 'TypesController@remove');
 
 // Audits API
 Route::get('/audits', 'AuditsController@index');
-Route::get('/audit/{id}', 'AuditsController@index');
+// Route::get('/audit/{id}', 'AuditsController@index');
 Route::get('/api/v1/audits', 'AuditsController@show');
+Route::get('/api/v2/audits', 'AuditsController@show_dtables');
 
 // Route::get('/employee/report/pdf', 'ExportToPdfController@export');
 Route::get('/print/envelope/{transactionItemCode}', 'ExportToPdfController@export');

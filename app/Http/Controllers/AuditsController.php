@@ -6,12 +6,13 @@ use Illuminate\Support\Facades\Input;
 use Carbon\Carbon;
 use Auth;
 use DB;
+use Audit;
 use App\Location;
 
 class AuditsController extends Controller
 {
     public function index(){
-        return view('layout.index');
+        return view('layouts.index');
     }
 
     public function show(Request $request){
@@ -51,6 +52,22 @@ class AuditsController extends Controller
             'data'=>$collection,
             'message'=>''
         ]);
+
+    }
+
+    public function show_dtables(Request $request){
+
+        $data = array(
+            'id'=>$request->input('id'),
+            'coe_code'=>$request->input('coe_code'),
+            'request_type'=>$request->input('request_type'),
+            'is_fulfiller'=>$request->input('is_fulfiller'),
+            'is_all_request'=>$request->input('is_all_request'),
+            'is_encrypted'=>$request->input('is_encrypted'),
+        );
+ 
+        $collection = Audit::all();
+        return DataTables::of($collection)->make(true);
 
     }
 

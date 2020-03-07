@@ -1,40 +1,28 @@
-<div class="main">
-    <div class="container-fluid">
-        <!-- /# row -->
-        <section id="main-content"> 
-            <div class="row">    
-                <div class="col-lg-12">
+<div class="main-content-inner">
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-ml-12">
+            <div class="row">
+                <!-- Textual inputs start -->
+                <div class="col-3 mt-5">
                     <div class="card">
-                        <div class="card-title pr">
-                            <h4>Create New Type</h4>
-                        </div>
                         <div class="card-body">
-                            <form ng-model="employeeDetails">
-                                <div class="form-row">
-                                    <div class="form-group col-md-3">
-                                        <label for="">Type Name</label>
-                                        <input type="text" class="form-control" placeholder="Type Name" ng-model="typeDetails.type_desc">
-                                    </div>
-                                </div>
-                                <br> 
-                                <button type="submit" class="btn btn-primary" ng-click="typeCtrl.createTypeBtn(typeDetails)" style="margin-top:12px;">SUBMIT</button>
-                            </form>
-                            <br>
+                            <h4 class="header-title">Create New Type</h4> 
+                            <div class="form-group">
+                                <label class="col-form-label">Type of Certificate</label>
+                                <input type="text" class="form-control form-control-md" placeholder="Type Name" ng-model="typeDetails.type_desc">
+                            </div> 
+                            <BR>	
+                            <button type="submit" class="btn btn-primary mt-4 pr-4 pl-4" ng-click="TypeCtrl.createTypeBtn(typeDetails)">Submit</button>
                         </div>
                     </div>
                 </div>
-                <!-- /# column -->
-            </div> 
-
-            <div class="row">    
-                <div class="col-lg-12">
+                <!-- Textual inputs end -->
+                <div class="col-9 mt-5">
                     <div class="card">
-                        <div class="card-title pr">
-                            <h4>Types</h4>
-                        </div>
                         <div class="card-body">
-                            <div class="table-responsive">
-                            <table datatable="ng" id="bootstrap-data-table-export" class="table table-striped table-bordered">
+                            <!-- <h4 class="header-title">Table</h4> -->
+                            <div class="table-responsive data-tables datatable-dark">
+                                <table id="dataTable3" class="text-center" datatable="ng"> 
                                     <thead>
                                         <tr>
                                             <th>Type Code</th>
@@ -44,32 +32,29 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="type in typeCtrl.types">
+                                        <tr ng-repeat="type in TypeCtrl.types">
                                             <td><%type.type_code%></td>
                                             <td><%type.type_desc%></td>
                                             <td><%type.created_by%></td> 
-                                            <td>
-                                                <a href="#" class="btn btn-primary btn-xs" ui-sref="type-edit({type_code_edit:type.type_code})">Edit</a>
-                                                <a href="#" class="btn btn-danger btn-xs" ui-sref="type-delete({type_code_delete:type.type_code})">Remove</a>
+                                            <td valign="middle"> <a href="#" title="edit" ui-sref="type-edit({type_code_edit:type.type_code})"> <i class="ti-pencil"></i> </a> | 
+                                                <a href="#" title="delete" ui-sref="type-delete({type_code_delete:type.type_code})"> <i class="ti-trash"></i> </a> </td>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
+                            </div> 
                         </div>
                     </div>
                 </div>
-                <!-- /# column -->
             </div>
-            <!-- /# row -->
-            
-        </section>
+        </div>
     </div>
 </div>
 
+
 <script type="text/ng-template" id="edit-type-modal">
     <div class="modal-header">
-        <h3 class="modal-title" id="modal-title"><%typeCtrl.collection.type_code%></h3>
+        <h3 class="modal-title" id="modal-title"><%TypeCtrl.collection.type_code%></h3>
     </div>
     <div class="modal-body" id="modal-body">
     <form ng-model="typeDetails">
@@ -80,7 +65,7 @@
                         <div class="form-row">
                             <div class="form-group col-md-5">
                                 <label for="">Type</label>
-                                <input type="text" class="form-control" placeholder="Type" ng-model="typeCtrl.collection.type_desc">
+                                <input type="text" class="form-control" placeholder="Type" ng-model="TypeCtrl.collection.type_desc">
                             </div>
                         </div>
                     </div>
@@ -90,14 +75,14 @@
     </form>
     </div>
     <div class="modal-footer">
-        <button type="submit" class="btn btn-primary" ng-click="typeCtrl.updateTypeBtn(typeCtrl.collection)">SUBMIT</button>
-        <button type="submit" class="btn btn-warning" ng-click="typeCtrl.close()" ui-sref="types">CANCEL</button>
+        <button type="submit" class="btn btn-primary" ng-click="TypeCtrl.updateTypeBtn(TypeCtrl.collection)">SUBMIT</button>
+        <button type="submit" class="btn btn-warning" ng-click="TypeCtrl.close()" ui-sref="types">CANCEL</button>
     </div>
 </script>
 
 <script type="text/ng-template" id="delete-type-modal">
     <div class="modal-header">
-        <h3 class="modal-title" id="modal-title"><%typeCtrl.collection.type_code%></h3>
+        <h3 class="modal-title" id="modal-title"><%TypeCtrl.collection.type_code%></h3>
     </div>
     <div class="modal-body" id="modal-body">
     <form ng-model="employeeDetails">
@@ -114,7 +99,7 @@
                         <div class="form-row">
                             <div class="form-group col-md-12">
                                 <label for="">Type :</label>
-                                <label for=""><%typeCtrl.collection.type_desc%></label>
+                                <label for=""><%TypeCtrl.collection.type_desc%></label>
                             </div>
                         </div>
                     </div>
@@ -124,7 +109,7 @@
     </form>
     </div>
     <div class="modal-footer">
-        <a href="#" class="btn btn-primary" ng-click="typeCtrl.deleteTypeBtn(typeCtrl.collection)">SUBMIT</a>
-        <a href="#" class="btn btn-warning" ng-click="typeCtrl.close()" ui-sref="types">CANCEL</a>
+        <a href="#" class="btn btn-primary" ng-click="TypeCtrl.deleteTypeBtn(TypeCtrl.collection)">SUBMIT</a>
+        <a href="#" class="btn btn-warning" ng-click="TypeCtrl.close()">CANCEL</a>
     </div>
 </script>

@@ -33,7 +33,7 @@
                         $uibModal.open({
                             templateUrl: 'edit-type-modal',
                             controller: 'TypeEditModalInsatanceCtrl',
-                            controllerAs: 'typeCtrl',
+                            controllerAs: 'TypeCtrl',
                             backdrop: 'static',
                             keyboard  : false,
                             resolve :{
@@ -63,7 +63,7 @@
                         $uibModal.open({
                             templateUrl: 'delete-type-modal',
                             controller: 'TypeDeleteModalInsatanceCtrl',
-                            controllerAs: 'typeCtrl',
+                            controllerAs: 'TypeCtrl',
                             backdrop: 'static',
                             keyboard  : false,
                             resolve :{
@@ -136,7 +136,7 @@
 
         TypeDeleteModalInsatanceCtrl.$inject = ['collection', 'TypesSrvcs', '$state', '$uibModalInstance', '$window'];
         function TypeDeleteModalInsatanceCtrl (collection, TypesSrvcs, $state, $uibModalInstance, $window) {
-
+            
             var vm = this;
             vm.collection = collection.data;
             console.log(vm.collection)
@@ -160,7 +160,7 @@
                 $window.location.href = route;
             };
 
-            vm.close = function() {
+            vm.close = function() { 
                 $uibModalInstance.close();
             };
         }

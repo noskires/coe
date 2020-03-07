@@ -6,33 +6,33 @@
                 <div class="col-3 mt-5">
                     <div class="card">
                         <div class="card-body">
-                            <h4 class="header-title">Self-Survice</h4>
+                            <h4 class="header-title">Walk-in</h4>
                             <div class="form-group">
                                 <label class="col-form-label">Type of Certificate</label>
-                                <select class="form-control coe-type-selection" ng-model="CoeCtrl.coeDetails.coe_type" ng-change="CoeCtrl.selectCoeType(CoeCtrl.coeDetails.coe_type)" required>
+                                <select class="form-control coe-type-selection" ng-model="WalkinCtrl.coeDetails.coe_type" ng-change="WalkinCtrl.selectCoeType(WalkinCtrl.coeDetails.coe_type)" required>
                                 <option value=''>- - - select type - - - </option> 
-                                    <option ng-value="type.type_code" ng-repeat="type in CoeCtrl.coeTypes"><%type.type_desc%></option>
+                                    <option ng-value="type.type_code" ng-repeat="type in WalkinCtrl.coeTypes"><%type.type_desc%></option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label class="col-form-label">Purpose</label>
-                                <select class="form-control coe-purposes-selection" ng-model="CoeCtrl.coeDetails.coe_purpose" required>
+                                <select class="form-control coe-purposes-selection" ng-model="WalkinCtrl.coeDetails.coe_purpose" required>
                                 <option value=''>- - - select purpose - - - </option> 
-                                    <option ng-value="purpose.purpose_code" ng-repeat="purpose in CoeCtrl.purposes"><%purpose.purpose_desc%></option>
+                                    <option ng-value="purpose.purpose_code" ng-repeat="purpose in WalkinCtrl.purposes"><%purpose.purpose_desc%></option>
                                 </select>
                             </div>
-                            <div class="form-group" ng-if="CoeCtrl.is_salary_option">
+                            <div class="form-group" ng-if="WalkinCtrl.is_salary_option">
                                 <label class="col-form-label">Salary Option</label>
-                                <select class="form-control coe-salary-option" ng-model="CoeCtrl.coeDetails.salary_option">
+                                <select class="form-control coe-salary-option" ng-model="WalkinCtrl.coeDetails.salary_option">
                                 <option value=''>- - - select salary option - - - </option> 
-                                <option ng-repeat="salary_option in CoeCtrl.salary_options" ng-value="salary_option.id" ng-bind="salary_option.text | uppercase"> <%salary_option.text | uppercase%> </option>
+                                <option ng-repeat="salary_option in WalkinCtrl.salary_options" ng-value="salary_option.id" ng-bind="salary_option.text | uppercase"> <%salary_option.text | uppercase%> </option>
                                 </select> 
                             </div>
                             <div class="form-group">
                                 <label for="example-text-input-lg" class="col-form-label">Remarks</label>
-                                <input class="form-control form-control-lg" type="text" id="example-text-input-lg" ng-model="CoeCtrl.coeDetails.remarks">
+                                <input class="form-control form-control-lg" type="text" id="example-text-input-lg" ng-model="WalkinCtrl.coeDetails.remarks">
                             </div>
-                            <button type="submit" class="btn btn-primary mt-4 pr-4 pl-4" ng-click="CoeCtrl.createCoeBtn(CoeCtrl.coeDetails)">Submit</button>
+                            <button type="submit" class="btn btn-primary mt-4 pr-4 pl-4" ng-click="WalkinCtrl.createCoeBtn(WalkinCtrl.coeDetails)">Submit</button>
                         </div>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                         <div class="card-body">
                             <!-- <h4 class="header-title">Table</h4> -->
                             <div class="table-responsive data-tables datatable-dark">
-                                <table datatable="" dt-options="CoeCtrl.dtOptions" dt-columns="CoeCtrl.dtColumns" dt-instance="CoeCtrl.dtInstance" class="table table-bordered table-hover table-md" ></table>
+                                <table datatable="" dt-options="WalkinCtrl.dtOptions" dt-columns="WalkinCtrl.dtColumns" dt-instance="WalkinCtrl.dtInstance" class="table table-bordered table-hover table-md" ></table>
                             </div>
                         </div>
                     </div>

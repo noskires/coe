@@ -18,6 +18,9 @@
 <link rel="stylesheet" type="text/css" href="{{URL::to('public/assets/css/styles.css')}}"> 
 <link rel="stylesheet" type="text/css" href="{{URL::to('public/assets/css/responsive.css')}}"> 
 
+<!-- Select2 -->
+<link rel="stylesheet" href="{{URL::to('public/node_modules/select2/dist/css/select2.min.css')}}">
+
 <!-- Sweet Alert -->
 <link rel="stylesheet" type="text/css" href="{{URL::to('public/node_modules/sweetalert/dist/sweetalert.css')}}"> 
 

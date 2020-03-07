@@ -4,12 +4,12 @@
         .module('coeApp')
         .controller('WalkinCtrl', WalkinCtrl)  
 
-        WalkinCtrl.$inject = ['CoeSrvcs', 'PurposesSrvcs', 'TypesSrvcs', '$state', '$stateParams', '$uibModal', '$window', '$http', '$timeout'];
-        function WalkinCtrl(CoeSrvcs, PurposesSrvcs, TypesSrvcs, $state, $stateParams, $uibModal, $window, $http, $timeout){
+        WalkinCtrl.$inject = ['CoeSrvcs', 'PurposesSrvcs', 'TypesSrvcs', '$state', '$stateParams', '$uibModal', '$window', '$http', '$timeout', '$scope', '$compile', 'DTOptionsBuilder', 'DTColumnBuilder', 'SweetAlert'];
+        function WalkinCtrl(CoeSrvcs, PurposesSrvcs, TypesSrvcs, $state, $stateParams, $uibModal, $window, $http, $timeout, $scope, $compile, DTOptionsBuilder, DTColumnBuilder, sweetAlert){
             var vm = this;
             var data = {}; 
  
-            vm.is_salary_option = 1; 
+            vm.is_salary_option = 1;  
  
             TypesSrvcs.list({type_code:'', is_self_service:'NO'}).then (function (response) {
                 if(response.data.status == 200)
@@ -24,6 +24,11 @@
                 {id:1, text:"CONFIDENTIAL"}
             ];
 
+            vm.render = function(data) {
+                
+                return '<a href="#" title="Print Preview" ng-click="WalkinCtrl.printCoeOriginalSigBtn(\'' + data + '\');"> <i class="ti-printer"></i> </a> <a href="#" title="View Status" ng-click="WalkinCtrl.viewCoeOriginalSigBtn(\'' + data + '\');"> <i class="ti-eye"></i> </a>';
+            }
+
             vm.coeData = {
                 coe_code:'',
                 request_type:'WALK IN',
@@ -31,6 +36,33 @@
                 is_all_request:'YES',
                 is_encrypted:'NO'
             }
+  
+            vm.dtOptions = DTOptionsBuilder.newOptions()
+                .withOption('ajax', {
+                url: 'api/v2/coe?coe_code='+vm.coeData.coe_code+'&request_type='+vm.coeData.request_type+'&is_fulfiller='+vm.coeData.is_fulfiller+
+                    '&is_all_request='+vm.coeData.is_all_request+'&is_encrypted='+vm.coeData.is_encrypted,
+                type: 'GET'
+            })
+            .withDataProp('data')
+                .withOption('processing', true)
+                .withOption('serverSide', true)
+                .withOption('responsive', true)
+                .withPaginationType('full_numbers');
+            vm.dtColumns = [
+                // DTColumnBuilder.newColumn('id').withTitle('#'),
+                DTColumnBuilder.newColumn('coe_code').withTitle('Reference'),
+                DTColumnBuilder.newColumn('employee_code').withTitle('Employee Code'),
+                DTColumnBuilder.newColumn('name').withTitle('Name'),
+                DTColumnBuilder.newColumn('type_desc').withTitle('Type'),
+                DTColumnBuilder.newColumn('purpose_desc').withTitle('Purpose'),
+                DTColumnBuilder.newColumn('is_salary_confidential01').withTitle('Salary Option'),
+                DTColumnBuilder.newColumn('changed_by').withTitle('Created By'),
+                DTColumnBuilder.newColumn('created_at').withTitle('Changed At'),
+                DTColumnBuilder.newColumn('coe_code').withTitle('').renderWith(vm.render)
+                .withOption('createdCell', function(cell, cellData, rowData, rowIndex, colIndex) {
+                    $compile(angular.element(cell).contents())($scope);
+                }), 
+            ];
 
             CoeSrvcs.list(vm.coeData).then (function (response) {
                 if(response.data.status == 200)

@@ -32,7 +32,7 @@
 
                 }
             }, function (){ alert('Bad Request!!!') })
-
+            
             vm.statusItemDetails = {
                 status_item_code:'',
                 status_code:'',
