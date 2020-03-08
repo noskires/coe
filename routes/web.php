@@ -19,6 +19,7 @@ Route::get('/', function () {
 });
 
 // COE API 
+Route::get('/user', 'CoeController@index2');
 Route::get('/self-service', 'CoeController@index2');
 Route::get('/orig-sig', 'CoeController@index2');
 

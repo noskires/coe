@@ -5,7 +5,7 @@
                 <!-- Textual inputs start -->
                 <div class="col-3 mt-5">
                     <div class="card">
-                        <div class="card-body">
+                        <div class="card-body"> 
                             <h4 class="header-title">Self-Survice</h4>
                             <div class="form-group">
                                 <label class="col-form-label">Type of Certificate</label>

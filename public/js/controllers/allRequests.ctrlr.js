@@ -72,7 +72,5 @@
             vm.routeTo = function(route){
                 $window.open(route, '_blank');
             };
-
         }
-
 })();

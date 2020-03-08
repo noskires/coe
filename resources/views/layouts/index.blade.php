@@ -2,6 +2,10 @@
 
 @section('content')
 
+<script type="text/ng-template" id="user.view">
+@include('user.user')
+</script> 
+
 <script type="text/ng-template" id="selfservice.view">
 @include('user.selfservice')
 </script> 
@@ -35,7 +39,7 @@
 
 <script type="text/ng-template" id="coe.details_admin.view">
 @include('coe.coe_details_admin')
-</script> 
+</script>
 
 <script type="text/ng-template" id="purpose.view">
 @include('purpose.purpose')

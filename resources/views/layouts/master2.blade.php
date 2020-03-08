@@ -189,10 +189,8 @@
 
     <!-- page container area start -->
 
-    <div class="page-container">
-        
-        @include('layouts.sidemenu')
-        
+    <div class="page-container-user">
+    
         <!-- main content area start -->
         <div class="main-content home-bg">
             <!-- header area start -->

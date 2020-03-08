@@ -33,16 +33,22 @@
             .state('main-view', main)
 
             //-- COE --//
-            .state('selfservice', {
-                url: '/self-service',
-                controller: 'CoeCtrl as CoeCtrl',
-                templateUrl: 'selfservice.view'
-            })
+            // .state('selfservice', {
+            //     url: '/self-service',
+            //     controller: 'CoeCtrl as CoeCtrl',
+            //     templateUrl: 'selfservice.view'
+            // })
 
-            .state('originalsignature', {
-                url: '/orig-sig',
+            // .state('originalsignature', {
+            //     url: '/orig-sig',
+            //     controller: 'CoeCtrl as CoeCtrl',
+            //     templateUrl: 'originalsignature.view'
+            // })
+
+            .state('user', {
+                url: '/user',
                 controller: 'CoeCtrl as CoeCtrl',
-                templateUrl: 'originalsignature.view'
+                templateUrl: 'user.view'
             })
 
             .state('index', {
@@ -74,13 +80,7 @@
                 controller: 'AssignedToMeCtrl as AssignedToMeCtrl',
                 templateUrl: 'fulfiller_assigned_to_me.view'
             })
-
-            // .state('assigned-to-me', {
-            //     url: '/all-request/:id',
-            //     controller: 'AllRequestCtrl as AllRequestCtrl',
-            //     templateUrl: 'fulfiller_all_request.view'
-            // })
-
+ 
             .state('all-request', {
                 url: '/all-request/:id',
                 controller: 'AllRequestCtrl as AllRequestCtrl',
