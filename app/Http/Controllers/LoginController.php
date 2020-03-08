@@ -30,6 +30,7 @@ class LoginController extends Controller {
 
             if (Auth::attempt($credentials)) {
                 // Authentication passed...  
+                Session::put('key', Crypt::encrypt($request->password));
                 return redirect('self-service/'.Crypt::encrypt(Auth::user()->email));
             }else{ 
                 return redirect('login')->with('status', 'Incorrect username or password!');

@@ -14,6 +14,8 @@ use App\Employee;
 use App\Type;
 use App\Purpose;
 use App\StatusItem;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 
 
