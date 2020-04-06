@@ -34,6 +34,10 @@ class CoeController extends Controller
 
     public function index($id){
 
+        
+        $user = Auth::user()->hasRole('admin|fulfiller');
+         
+        // return Auth::user()->hasRole('writer');
         try {
             if(Crypt::decrypt($id)!=Auth::user()->email){
                 return "You are not authorized to view this!";
@@ -67,7 +71,7 @@ class CoeController extends Controller
 
             $decrypted = decrypt($id);
 
-            if(Auth::user()->is_admin==1){
+            if(Auth::user()->hasRole('admin|fulfiller')){
                 $data['coe_code'] = Crypt::decrypt($id);
                 return view('layouts.index', $data); 
             }else{
@@ -90,7 +94,8 @@ class CoeController extends Controller
             'is_all_request'=>$request->input('is_all_request'),
             'is_encrypted'=>$request->input('is_encrypted'),
         );
- 
+  
+
             $collection = Coe::select(
                 // DB::raw("row_number() OVER (ORDER BY coe.created_at DESC) as v_id"),
                 'coe.coe_code',
@@ -134,7 +139,7 @@ class CoeController extends Controller
             ->leftjoin('purposes as purpose','purpose.purpose_code','=','coe.coe_purpose')
             ->leftjoin('coe_types as type','type.type_code','=','purpose.type_code');
 
-        // if(Auth::user()->is_admin==1){
+        // if(Auth::user()->hasRole('admin|fulfiller')){
             if($data['coe_code']){
                 if($data['is_encrypted']=="YES"){
                     $collection = $collection->where('coe_code', Crypt::decrypt($data['coe_code']));
@@ -158,7 +163,7 @@ class CoeController extends Controller
             $collection = $collection->where('is_self_service', 2);
         }
         
-        if(Auth::user()->is_admin==1){
+        if(Auth::user()->hasRole('admin|fulfiller')){
 
             if($data['is_all_request']!='YES'){
 
@@ -195,7 +200,8 @@ class CoeController extends Controller
             'is_encrypted'=>$request->input('is_encrypted'),
         );
  
-        $collection = Coe::select(
+ 
+        $collection = Coe::select( 
             // DB::raw("row_number() OVER (ORDER BY coe.created_at DESC) as v_id"),
             'coe.coe_code',
             'coe.employee_code', 
@@ -235,7 +241,7 @@ class CoeController extends Controller
             $collection = $collection->where('is_self_service', 2);
         }
         
-        if(Auth::user()->is_admin==1){
+        if(Auth::user()->hasRole('admin|fulfiller')){
 
             if($data['is_all_request']!='YES'){
 
@@ -248,6 +254,8 @@ class CoeController extends Controller
         }else{
             $collection = $collection->where('coe.created_by', Auth::user()->email);
         }
+
+        // $collection = $collection->orderBy('coe.created_at', 'desc');
  
         $dtables = DataTables::eloquent($collection)
         ->filterColumn('name', function($query, $keyword) {
@@ -265,42 +273,10 @@ class CoeController extends Controller
         ->filterColumn('purpose_desc', function($query, $keyword) {
             $sql = "purpose_desc like ?";
             $query->whereRaw($sql, ["%{$keyword}%"]);
-        });
+        })
+        ->addIndexColumn();
 
-     
-        
         return $dtables->toJson();
-
-    }
-
-    public function show_dtables3(Request $request){
-
-        $data['coe_code'] = 'eHR-1216-19-100002-CEC';
-
-        $collection = Coe::with('purpose');
-
-        // $collection = Coe::defaultFields()->whereFields($data)
-
-        // ->with(['purpose'=>function($query) use ($request){
-
-        //     $query->defaultFields();
-            
-        // }]);
-  
-        // return DataTables::of($collection)->make(true);
-
-        // $dtables = DataTables::eloquent($collection)
-        // ->filterColumn('is_salary_confidential01', function($query, $keyword) {
-        //     $sql = "CASE WHEN coe.is_salary_confidential = '0' THEN 'SHOW SALARY' ELSE 'CONFIDENTIAL' END  like ?";
-        //     $query->whereRaw($sql, ["%{$keyword}%"]);
-        // })
-        // ->addColumn('purpose', function (Coe $coe) {
-        //     return $coe->purposes->map(function($purpose) {
-        //         return str_limit($purpose->purpose_desc, 30, '...');
-        //     })->implode('<br>');
-        // });
- 
-        // return $dtables->toJson();
 
     }
 
@@ -556,6 +532,16 @@ class CoeController extends Controller
             'status' => 200,
             'data' => $encrypt,
             'message' => 'Successfully saved.'
+        ]);
+    }
+
+    public function encrypt(Request $request){
+
+        $encrypt =  Crypt::encrypt(Auth::user()->email);
+
+        return response()->json([
+            'status' => 200,
+            'data' => $encrypt
         ]);
     }
 

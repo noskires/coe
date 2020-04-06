@@ -5,11 +5,11 @@
             <div class="card">
                 <div class="card-body">
                     <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="pills-tab1-tab" data-toggle="pill" href="#pills-tab1" role="tab" aria-controls="pills-tab1" aria-selected="true"><i class="ti-map-alt"></i> <span>&nbsp; Self Service</span></a></a>
+                    <li class="nav-item">
+                            <a href="self-service/{{Crypt::encrypt(Auth::user()->email)}}" class="nav-link active"><i class="ti-map-alt"></i> <span>&nbsp; Self Service</span></a></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="pills-tab2-tab" data-toggle="pill" href="#pills-tab2" role="tab" aria-controls="pills-tab2" aria-selected="false"><i class="ti-marker-alt"></i> <span>&nbsp; Original Signature</span></a></a>
+                            <a href="original-signature/{{Crypt::encrypt(Auth::user()->email)}}" class="nav-link" ><i class="ti-marker-alt"></i> <span>&nbsp; Original Signature</span></a></a>
                         </li>
                     </ul>
                     <div class="tab-content" id="pills-tabContent">
@@ -20,7 +20,7 @@
                                 <div class="col-3 mt-5">
                                     <div class="card">
                                         <div class="card-body"> 
-                                            <h4 class="header-title">Self-Survice</h4>
+                                            <h4 class="header-title">Self-Service</h4>
                                             <div class="form-group">
                                                 <label class="col-form-label">Type of Certificate</label>
                                                 <select class="form-control coe-type-selection" ng-model="CoeCtrl.coeDetails.coe_type" ng-change="CoeCtrl.selectCoeType(CoeCtrl.coeDetails.coe_type)" required>
@@ -37,7 +37,7 @@
                                             </div>
                                             <div class="form-group" ng-if="CoeCtrl.is_salary_option">
                                                 <label class="col-form-label">Salary Option</label>
-                                                <select class="form-control coe-salary-option" ng-model="CoeCtrl.coeDetails.salary_option">
+                                                <select class="form-control" ng-model="CoeCtrl.coeDetails.salary_option">
                                                 <option value=''>- - - select salary option - - - </option> 
                                                 <option ng-repeat="salary_option in CoeCtrl.salary_options" ng-value="salary_option.id" ng-bind="salary_option.text | uppercase"> <%salary_option.text | uppercase%> </option>
                                                 </select> 

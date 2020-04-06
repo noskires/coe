@@ -89,7 +89,7 @@ class StatusItemsController extends Controller
         $transaction = DB::transaction(function($field) use($fields){
         // try{
 
-            if(Auth::user()->is_admin==1){
+            // if(Auth::user()->is_admin==1){
             
                 $status_item = new StatusItem;
                 
@@ -127,13 +127,13 @@ class StatusItemsController extends Controller
                     'message' => 'Successfully saved.'
                 ]);
 
-            }else{
-                return response()->json([
-                    'status' => 200,
-                    'data' => null,
-                    'message' => 'You are not authorized to add new records!.'
-                ]);
-            }
+            // }else{
+            //     return response()->json([
+            //         'status' => 200,
+            //         'data' => null,
+            //         'message' => 'You are not authorized to add new records!.'
+            //     ]);
+            // }
 
         // }
         // catch (\Exception $e) 

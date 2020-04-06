@@ -3,6 +3,7 @@
         <div class="col-md-12 col-sm-12 col-ml-12">
             <div class="row">
                 <!-- Textual inputs start -->
+                @role('admin')
                 <div class="col-3 mt-5">
                     <div class="card">
                         <div class="card-body">
@@ -15,9 +16,11 @@
                             <button type="submit" class="btn btn-primary mt-4 pr-4 pl-4" ng-click="TypeCtrl.createTypeBtn(typeDetails)">Submit</button>
                         </div>
                     </div>
-                </div>
-                <!-- Textual inputs end -->
+                </div> 
                 <div class="col-9 mt-5">
+                @else
+                <div class="col-12 mt-5">
+                @endrole
                     <div class="card">
                         <div class="card-body">
                             <!-- <h4 class="header-title">Table</h4> -->
@@ -28,7 +31,9 @@
                                             <th>Type Code</th>
                                             <th>Type Desc</th>
                                             <th>Created By</th>
-                                            <th></th>
+                                            @role('admin')
+                                            <th>Actions</th>
+                                            @endrole
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -36,9 +41,11 @@
                                             <td><%type.type_code%></td>
                                             <td><%type.type_desc%></td>
                                             <td><%type.created_by%></td> 
+                                            @role('admin')
                                             <td valign="middle"> <a href="#" title="edit" ui-sref="type-edit({type_code_edit:type.type_code})"> <i class="ti-pencil"></i> </a> | 
                                                 <a href="#" title="delete" ui-sref="type-delete({type_code_delete:type.type_code})"> <i class="ti-trash"></i> </a> </td>
                                             </td>
+                                            @endrole
                                         </tr>
                                     </tbody>
                                 </table>

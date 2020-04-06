@@ -7,12 +7,11 @@
                         <div class="card-body">
                             <!-- <h4 class="header-title">Table</h4> -->
                             <div class="table-responsive data-tables datatable-dark">
-                                <!-- <table datatable="" dt-options="auditCtrl.dtOptions" dt-columns="auditCtrl.dtColumns" dt-instance="auditCtrl.dtInstance" class="table table-bordered table-hover table-md" ></table> -->
-                                <table datatable="ng" id="bootstrap-data-table-export" class="table table-striped table-bordered">
+                                <table datatable="" dt-options="auditCtrl.dtOptions" dt-columns="auditCtrl.dtColumns" dt-instance="auditCtrl.dtInstance" class="table table-bordered table-hover table-md" ></table>
+                                <!-- <table datatable="ng" id="bootstrap-data-table-export" class="table table-striped table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
-                                            <!-- <th>User Type</th> -->
+                                            <th>ID</th> 
                                             <th>User</th>
                                             <th>Event</th>
                                             <th>Event ID</th>
@@ -24,8 +23,7 @@
                                     </thead>
                                     <tbody>
                                         <tr ng-repeat="audit in auditCtrl.audits">
-                                            <td><%audit.id%></td>
-                                            <!-- <td><%audit.user_type%></td> -->
+                                            <td><%audit.id%></td> 
                                             <td><%audit.email%></td>
                                             <td><%audit.event%></td>
                                             <td><%audit.auditable_type%></td>
@@ -35,7 +33,7 @@
                                             <td><%audit.created_at%></td> 
                                         </tr>
                                     </tbody>
-                                </table>
+                                </table> -->
                             </div>
                         </div>
                     </div>

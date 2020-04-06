@@ -25,6 +25,12 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'otp', 'is_authenticated',
     ];
+
+    protected $casts = [
+        'id' => 'varchar'
+    ];
+
+    protected $rememberTokenName = false;
 }

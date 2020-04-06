@@ -3,13 +3,13 @@
     angular
         .module('coeApp')
         .controller('CoeCtrl', CoeCtrl) 
-        .controller('CoeViewModalInsatanceCtrl', CoeViewModalInsatanceCtrl) 
+        // .controller('CoeViewModalInsatanceCtrl', CoeViewModalInsatanceCtrl) 
         
         CoeCtrl.$inject = ['CoeSrvcs', 'PurposesSrvcs', 'TypesSrvcs', 'StatusItemsSrvcs', '$scope', '$state', '$stateParams', '$uibModal', '$window', '$http', '$timeout', '$compile', 'DTOptionsBuilder', 'DTColumnBuilder', 'SweetAlert'];
         function CoeCtrl(CoeSrvcs, PurposesSrvcs, TypesSrvcs, StatusItemsSrvcs, $scope, $state, $stateParams, $uibModal, $window, $http, $timeout, $compile, DTOptionsBuilder, DTColumnBuilder, sweetAlert){
             var vm = this;
             var data = {};  
-            
+
             vm.is_salary_option = 1;
             vm.is_hide = 0;
             
@@ -35,7 +35,7 @@
                 url: 'api/v2/coe?coe_code='+vm.coeData.coe_code+'&request_type='+vm.coeData.request_type+'&is_fulfiller='+vm.coeData.is_fulfiller+
                     '&is_all_request='+vm.coeData.is_all_request+'&is_encrypted='+vm.coeData.is_encrypted,
                 type: 'GET'
-            }) 
+            })
             .withDataProp('data')
                 .withOption('processing', true)
                 .withOption('serverSide', true)
@@ -44,6 +44,7 @@
             vm.dtColumns = [
                 // DTColumnBuilder.newColumn('id').withTitle('#'),
                 // DTColumnBuilder.newColumn('name').withTitle('Name'),
+                // DTColumnBuilder.newColumn('created_at').withTitle('Created at'),
                 DTColumnBuilder.newColumn('coe_code').withTitle('Reference'),
                 DTColumnBuilder.newColumn('type_desc').withTitle('Type'),
                 DTColumnBuilder.newColumn('purpose_desc').withTitle('Purpose'),
@@ -97,7 +98,7 @@
             }
             
             vm.selectCoeType = function(type_code){ 
-                
+
                 PurposesSrvcs.list({purpose_code:'', type_code:type_code, request_type:"SELF SERVICE"}).then (function (response) {
                     if(response.data.status == 200)
                     {
@@ -190,14 +191,12 @@
             }
 
             vm.printCoeBtn = function(coeCode){
-                
                 CoeSrvcs.getEncrypted({coe_code:coeCode}).then (function (response) {
                     if(response.data.status == 200)
                     {
                         vm.routeTo("print/coe/"+response.data.data)
                     }
                 }, function (){ alert('Bad Request!!!') })
-                
             }
  
             vm.routeTo = function(route){
@@ -205,31 +204,31 @@
             };
         }
 
-        CoeViewModalInsatanceCtrl.$inject = ['collection', 'CoeSrvcs', '$state', '$uibModalInstance', '$window'];
-        function CoeViewModalInsatanceCtrl (collection, CoeSrvcs, $state, $uibModalInstance, $window) {
+        // CoeViewModalInsatanceCtrl.$inject = ['collection', 'CoeSrvcs', '$state', '$uibModalInstance', '$window'];
+        // function CoeViewModalInsatanceCtrl (collection, CoeSrvcs, $state, $uibModalInstance, $window) {
 
-            var vm = this;
-            vm.collection = collection.data;
-            console.log(vm.collection['coe_code']) 
+        //     var vm = this;
+        //     vm.collection = collection.data;
+        //     console.log(vm.collection['coe_code']) 
             
        
-            CoeSrvcs.load({coe_code:vm.collection['coe_code']}).then(function(response){
-                if (response.data.status == 200) {
-                    alert('Successfully loaded!');
-                }
-                else {
-                    alert(response.data.message);
-                }
-                console.log(response.data);
-            });
+        //     CoeSrvcs.load({coe_code:vm.collection['coe_code']}).then(function(response){
+        //         if (response.data.status == 200) {
+        //             alert('Successfully loaded!');
+        //         }
+        //         else {
+        //             alert(response.data.message);
+        //         }
+        //         console.log(response.data);
+        //     });
          
-            vm.routeTo = function(route){
-                $window.location.href = route;
-            };
+        //     vm.routeTo = function(route){
+        //         $window.location.href = route;
+        //     };
 
-            vm.close = function() {
-                $uibModalInstance.close();
-            };
-        }
+        //     vm.close = function() {
+        //         $uibModalInstance.close();
+        //     };
+        // }
 
 })();

@@ -26,7 +26,7 @@
             }, function (){ alert('Bad Request!!!') })
 
             vm.render = function(data) {
-                return '<a href="#" title="View status" ng-click="coeCtrl.viewCoeOriginalSigBtn1(\'' + data + '\');"> <i class="fa fa-lg fa-eye"></i> <span>View</span> </a>';
+                return '<a href="#" title="View status" ng-click="OriginalSignatureCertCtrl.viewCoeOriginalSigBtn1(\'' + data + '\');"> <i class="fa fa-lg fa-eye"></i> <span>View</span> </a>';
             }
 
             vm.coeData = {
@@ -50,6 +50,7 @@
                 .withPaginationType('full_numbers');
             vm.dtColumns = [
                 // DTColumnBuilder.newColumn('id').withTitle('#'),
+                // DTColumnBuilder.newColumn('created_at').withTitle('Created at'),
                 DTColumnBuilder.newColumn('coe_code').withTitle('Reference'),
                 DTColumnBuilder.newColumn('type_desc').withTitle('Type'),
                 DTColumnBuilder.newColumn('purpose_desc').withTitle('Purpose'),
@@ -124,6 +125,7 @@
                         $state.reload();
                     }
                     else {
+                        console.log(response.data)
                         sweetAlert.swal(response.data.type+"!", response.data.message, response.data.type);
                     }
                 });

@@ -9,7 +9,7 @@
         PurposesCtrl.$inject = ['PurposesSrvcs', 'TypesSrvcs', '$state', '$stateParams', '$uibModal', '$window', 'SweetAlert'];
         function PurposesCtrl(PurposesSrvcs, TypesSrvcs, $state, $stateParams, $uibModal, $window, sweetAlert){
             var vm = this;
-            var data = {}; 
+            var data = {};
  
             PurposesSrvcs.list({purpose_code:'', type_code:''}).then (function (response) {
                 if(response.data.status == 200)
@@ -124,6 +124,8 @@
                     // else {
                     //     alert(response.data.message);
                     // } 
+
+                    console.log(response.data)
                     if (response.data.status == 200) {
                         sweetAlert.swal("Success!", "Successfully updated!", "success");
                         $state.reload();

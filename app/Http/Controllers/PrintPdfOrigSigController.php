@@ -11,6 +11,8 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use PDF;
 use Response;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class PrintPdfOrigSigController extends Controller {
 
@@ -22,7 +24,7 @@ class PrintPdfOrigSigController extends Controller {
             return "You are not allowed to do that. You are being monitored!";
         }
 
-        if(Auth::user()->is_admin==1){ 
+        if(Auth::user()->hasRole('admin|fulfiller')){
             if($data['coe']){
                 if($data['coe']->type_desc == "CERTIFICATE OF EMPLOYMENT AND COMPENSATION") {
                     $pdf = PDF::loadView('coe.cec_print', $data)->setPaper('Letter');

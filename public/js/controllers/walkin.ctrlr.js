@@ -26,7 +26,7 @@
 
             vm.render = function(data) {
                 
-                return '<a href="#" title="Print Preview" ng-click="WalkinCtrl.printCoeOriginalSigBtn(\'' + data + '\');"> <i class="ti-printer"></i> </a> <a href="#" title="View Status" ng-click="WalkinCtrl.viewCoeOriginalSigBtn(\'' + data + '\');"> <i class="ti-eye"></i> </a>';
+                return '<a href="#" title="Print Preview" ng-click="WalkinCtrl.printCoeBtn(\'' + data + '\');"> <i class="fa fa-lg fa-print"></i> </a>';
             }
 
             vm.coeData = {
@@ -56,9 +56,9 @@
                 DTColumnBuilder.newColumn('type_desc').withTitle('Type'),
                 DTColumnBuilder.newColumn('purpose_desc').withTitle('Purpose'),
                 DTColumnBuilder.newColumn('is_salary_confidential01').withTitle('Salary Option'),
-                DTColumnBuilder.newColumn('changed_by').withTitle('Created By'),
+                // DTColumnBuilder.newColumn('changed_by').withTitle('Created By'),
                 DTColumnBuilder.newColumn('created_at').withTitle('Changed At'),
-                DTColumnBuilder.newColumn('coe_code').withTitle('').renderWith(vm.render)
+                DTColumnBuilder.newColumn('coe_code').withTitle('Action').renderWith(vm.render)
                 .withOption('createdCell', function(cell, cellData, rowData, rowIndex, colIndex) {
                     $compile(angular.element(cell).contents())($scope);
                 }), 

@@ -7,86 +7,67 @@
   <title>Mail</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-
-  <style type="text/css">
-    body{
-      font-size:16px;
-    }
-
-    label{
-      color:black;
-    }
-    
-    .fade.in {
-      opacity: 1;
-    }
-
-    .modal.in .modal-dialog {
-      -webkit-transform: translate(0, 0);
-      -o-transform: translate(0, 0);
-      transform: translate(0, 0);
-    }
-
-    .modal-backdrop.in {
-      filter: alpha(opacity=50);
-      opacity: .5;
-    }
-
-    @media (min-width: 768px) {
-      .modal-xlg {
-        width: 90%;
-        max-width:1500px; 
-        margin-top:100px;
-        font-size:10px;
-      }
-    }
-
-
-    .td1{
-      padding:3px;
-      border:1px solid #000000;
-    }
-    
-  </style>
+ 
 </head>
 
 <body>
-
- 
-    <div>
-      <table width="50%" align="center" cellpadding="0" cellspacing="0" class="td1">
-        <!-- <tr> <td style="background-color: red;">  </td> </tr> -->
+      <center>
+      
+        
+        <table width="50%">
         <tr>
-          <td class="td1" width="30%"> REFERENCE# </td>
-          <td class="td1"> <a href="http://svrmdbhris02/online-coe/original-signature/print/{{Crypt::encrypt($coe_code)}}">{{$coe_code}}</a> </td>
+          <td colspan="2">
+          <div style="width: 350px;
+        margin: auto;
+        padding: 30px;
+        border: 1px solid #eee;
+        box-shadow: 0 0 10px rgba(0, 0, 0, .15);
+        font-size: 14px;
+        line-height: 24px;
+        font-family: Arial;
+        color: #555;
+        border-top: 5px solid #007bff;">
+        </div>
+          </td>
         </tr>
         <tr>
-          <td class="td1"> REQUESTOR </td>
-          <td class="td1"> {{$name}} </td>
+          <td align="right" width="55%"> Reference #: </td>
+          <td align="right"> <a href="http://svrmdbhris02/online-coe/original-signature/print/{{Crypt::encrypt($coe_code)}}">{{$coe_code}}</a> </td>
         </tr>
         <tr>
-          <td class="td1"> TYPE OF REQUEST </td>
-          <td class="td1"> {{$type_desc}} </td>
+          <td align="right">Requested at: </td>
+          <td align="right">{{$created_at}}</td>
         </tr>
         <tr>
-          <td class="td1"> PURPOSE </td>
-          <td class="td1"> {{$purpose_desc}} </td>
+          <td colspan="2"> <br> <hr> </td>
         </tr>
         <tr>
-          <td class="td1"> REQUESTED AT </td>
-          <td class="td1"> {{$created_at}} </td>
+          <td colspan="2" style="font-family: Times News Roman; font-size: 15px;"><center><h1>Certificate of Employment</center></h1></td>
         </tr>
+        </table>
+        <table width="50%">
         <tr>
-          <td class="td1"> ASSIGNED TO </td>
-          <td class="td1"> {{$changed_by}} </td>
+          <td width="25%" style="border-bottom: 1px solid #eee;">Requestor </td>
+          <td width="75%" style="border-bottom: 1px solid #eee;">{{$name}}</td>
         </tr>
-        <tr>
-          <td class="td1"> REMARKS </td>
-          <td class="td1"> {{$remarks}} </td>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="border-bottom: 1px solid #eee;">Type of Request </td>
+          <td style="border-bottom: 1px solid #eee;">{{$type_desc}}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="border-bottom: 1px solid #eee;">Purpose </td>
+          <td style="border-bottom: 1px solid #eee;">{{$purpose_desc}}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="border-bottom: 1px solid #eee;">Assigned to </td>
+          <td style="border-bottom: 1px solid #eee;">{{$changed_by}}</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="border-bottom: 1px solid #eee;">Remarks</td>
+          <td style="border-bottom: 1px solid #eee;">{{$remarks}}</td>
         </tr>
       </table>
-    </div>
-
+    </center>
 </body>
 </html>
 

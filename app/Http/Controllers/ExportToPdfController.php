@@ -29,10 +29,14 @@ class ExportToPdfController extends Controller {
 
             if($data['coe']->type_desc == "CERTIFICATE OF EMPLOYMENT AND COMPENSATION"){
                 $pdf = PDF::loadView('coe.cec_print', $data)->setPaper('Letter');
+                Storage::put('public/pdf/samples.pdf', $pdf->output());
                 $pdf->setEncryption($pword);
                 return $pdf->stream('coe.cec_print.pdf');
             }elseif($data['coe']->type_desc == "CERTIFICATE OF EMPLOYMENT"){
+                $path = public_path('pdf/');
                 $pdf = PDF::loadView('coe.coe_print', $data)->setPaper('Letter');
+                // Storage::put('public/pdf/samples.pdf', $pdf->output());
+                $pdf->save($path . '/sample.pdf');
                 $pdf->setEncryption($pword);
                 return $pdf->stream('coe.coe_print.pdf');
             }else{

@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Crypt;
 use Illuminate\Support\Str;
 use Session;
+use App\Otp;
 
 class OtpController extends Controller {
 
@@ -31,15 +32,26 @@ class OtpController extends Controller {
         }
     }
 
+    // public function create(Request $request){
+    //     $user = Otp::firstOrNew(array('name' => Input::get('name')));
+    //     $user->foo = Input::get('foo');
+    //     $user->save();
+    // }
+
     public function verify(Request $request){
 
         $request->otp = str_replace('·','',$request->otp);
 
-        $user = User::where('email', Auth::user()->email)->where('otp', $request->otp)->first();
-        
-        if(count($user)>0){
-            $user->is_authenticated = 1;
-            $user->save();
+        // $user = User::where('email', Auth::user()->email)->where('otp', $request->otp)->first();
+        $Otp = Otp::where('id', Auth::user()->id)->where('otp', $request->otp)->first();
+
+        if(count($Otp)>0){
+            
+            $Otp->is_authenticated     = 1; 
+            $Otp->save();
+
+            // $user->is_authenticated = 1;
+            // $user->save();
             return redirect('self-service/'.Crypt::encrypt(Auth::user()->email));
         }else{
             return redirect('otp/'.Crypt::encrypt(Auth::user()->email))->with('status', 'Incorrect One Time Passcode!');

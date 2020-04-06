@@ -62,8 +62,7 @@
 
 <!-- Controllers --> 
 <script src="{{URL::to('public/js/controllers/audits.ctrlr.js')}}"></script>
-<script src="{{URL::to('public/js/controllers/coe.ctrlr.js')}}"></script>
-<script src="{{URL::to('public/js/controllers/coeDetails.ctrlr.js')}}"></script>
+<script src="{{URL::to('public/js/controllers/coe.ctrlr.js')}}"></script> 
 <script src="{{URL::to('public/js/controllers/originalSignatureCertificate.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/assignedtome.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/walkin.ctrlr.js')}}"></script>
@@ -71,6 +70,9 @@
 <script src="{{URL::to('public/js/controllers/purposes.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/types.ctrlr.js')}}"></script>
 <script src="{{URL::to('public/js/controllers/otp.ctrlr.js')}}"></script>
+<script src="{{URL::to('public/js/controllers/admin.ctrlr.js')}}"></script>
+<script src="{{URL::to('public/js/controllers/roles.ctrlr.js')}}"></script>
+<script src="{{URL::to('public/js/controllers/permissions.ctrlr.js')}}"></script>
 
 <!-- Services --> 
 <script src="{{URL::to('public/js/services/audits.srvcs.js')}}"></script>
@@ -79,5 +81,8 @@
 <script src="{{URL::to('public/js/services/types.srvcs.js')}}"></script>
 <script src="{{URL::to('public/js/services/otp.srvcs.js')}}"></script>
 <script src="{{URL::to('public/js/services/status_items.srvcs.js')}}"></script>
+<script src="{{URL::to('public/js/services/admin.srvcs.js')}}"></script>
+<script src="{{URL::to('public/js/services/roles.srvcs.js')}}"></script>
+<script src="{{URL::to('public/js/services/permissions.srvcs.js')}}"></script>
 
 @yield('additionalScripts')

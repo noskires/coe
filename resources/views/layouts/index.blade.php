@@ -2,8 +2,18 @@
 
 @section('content')
 
-<script type="text/ng-template" id="user.view">
-@include('user.user')
+@if(Auth::user()->hasRole('admin|fulfiller'))
+
+<script type="text/ng-template" id="admin.view">
+@include('admin.admin')
+</script> 
+
+<script type="text/ng-template" id="role.view">
+@include('role.role')
+</script> 
+
+<script type="text/ng-template" id="permission.view">
+@include('permission.permission')
 </script> 
 
 <script type="text/ng-template" id="selfservice.view">
@@ -52,5 +62,17 @@
 <script type="text/ng-template" id="audit.view">
 @include('audit.audit')
 </script>
+
+@else
+
+<script type="text/ng-template" id="selfservice.view">
+@include('user.selfservice_user')
+</script> 
+
+<script type="text/ng-template" id="originalsignature.view">
+@include('user.originalsignature_user')
+</script> 
+
+@endif
 
 @endsection

@@ -8,6 +8,10 @@
                         <div class="card-body">
                             <h4 class="header-title">Walk-in</h4>
                             <div class="form-group">
+                                <label class="col-form-label">Employee</label>
+                                <select class="form-control select2" style="width:95%" > </select>
+                            </div>
+                            <div class="form-group">
                                 <label class="col-form-label">Type of Certificate</label>
                                 <select class="form-control coe-type-selection" ng-model="WalkinCtrl.coeDetails.coe_type" ng-change="WalkinCtrl.selectCoeType(WalkinCtrl.coeDetails.coe_type)" required>
                                 <option value=''>- - - select type - - - </option> 
@@ -17,13 +21,13 @@
                             <div class="form-group">
                                 <label class="col-form-label">Purpose</label>
                                 <select class="form-control coe-purposes-selection" ng-model="WalkinCtrl.coeDetails.coe_purpose" required>
-                                <option value=''>- - - select purpose - - - </option> 
+                                <option value=''>- - - select purpose - - - </option>
                                     <option ng-value="purpose.purpose_code" ng-repeat="purpose in WalkinCtrl.purposes"><%purpose.purpose_desc%></option>
                                 </select>
                             </div>
                             <div class="form-group" ng-if="WalkinCtrl.is_salary_option">
                                 <label class="col-form-label">Salary Option</label>
-                                <select class="form-control coe-salary-option" ng-model="WalkinCtrl.coeDetails.salary_option">
+                                <select class="form-control" ng-model="WalkinCtrl.coeDetails.salary_option">
                                 <option value=''>- - - select salary option - - - </option> 
                                 <option ng-repeat="salary_option in WalkinCtrl.salary_options" ng-value="salary_option.id" ng-bind="salary_option.text | uppercase"> <%salary_option.text | uppercase%> </option>
                                 </select> 
@@ -51,13 +55,45 @@
         </div>
     </div>
 </div>
+ 
 
+   
 <script type="text/javascript">
 
-    $(function() { 
-        $(".coe-type-selection").select2();
-        $(".coe-purposes-selection").select2();
-        $(".coe-salary-option").select2();
-    });
+    $(function() {
+
+        $(".select2").select2({
+            ajax: {
+                url: "api/v2/employees",
+                dataType: 'json',
+                delay: 100,
+                data: function (params) {
+                return {
+                    q: params.term, // search term
+                    page: params.page
+                };
+                },
+                processResults: function (data, params) {
+                // parse the results into the format expected by Select2
+                // since we are using custom formatting functions we do not need to
+                // alter the remote JSON data, except to indicate that infinite
+                // scrolling can be used
+                params.page = params.page || 1;
+
+                return {
+                    results: data.items,
+                    pagination: {
+                    more: (params.page * 30) < data.total_count
+                    }
+                };
+                },
+                cache: true
+            }
+            });
+
+            $(".coe-type-selection").select2();
+            $(".coe-purposes-selection").select2();
+            $(".coe-salary-option").select2();
+        });
         
 </script>

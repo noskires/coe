@@ -22,7 +22,8 @@ class EmployeesController extends Controller
             'email_address'=>$request->input('email_address'),
             'term'=>$request->input('term'),//select2 default
             'q'=>$request->input('q'),//select2 default
-            'type'=>$request->input('type') //regular employee or addressee
+            'type'=>$request->input('type'), //regular employee
+            'employment_status'=>$request->input('employment_status') 
         );
 
        
@@ -54,6 +55,10 @@ class EmployeesController extends Controller
             $collection = $collection->where('employee.employee_code', 'like', '%'.$data['employee_code'].'%');
         }
 
+        if($data['employment_status']){
+            $collection = $collection->where('employee.employment_status', 'like', '%'.$data['employment_status'].'%');
+        }
+
         $collection = $collection->where('employee.email_address', 'like', '%'.Auth::user()->email.'%');
 
         $collection = $collection->get();
@@ -74,7 +79,8 @@ class EmployeesController extends Controller
             'email_address'=>$request->input('email_address'),
             'term'=>$request->input('term'),//select2 default
             'q'=>$request->input('q'),//select2 default
-            'type'=>$request->input('type') //regular employee or addressee
+            'type'=>$request->input('type'), //regular employee or addressee
+            'employment_status'=>$request->input('employment_status') 
         );
         
 
@@ -91,6 +97,10 @@ class EmployeesController extends Controller
         
         if($data['employee_code']){
             $collection = $collection->where('employee.employee_code', 'like', '%'.$data['employee_code'].'%');
+        }
+
+        if($data['employment_status']){
+            $collection = $collection->where('employee.employment_status', 'like', '%'.$data['employment_status'].'%');
         }
 
         if($data['term']){

@@ -41,6 +41,14 @@
                         headers: {'Content-Type': 'application/json'}
                     })
                 }, 
+                encrypt: function(data) {
+                    return $http({
+                        method: 'GET',
+                        url: 'api/v2/get-encrypted',
+                        data: data,
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                }, 
                 load: function(data) {
                     return $http({
                         method: 'GET',

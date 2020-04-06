@@ -45,6 +45,24 @@
             //     templateUrl: 'originalsignature.view'
             // })
 
+            .state('admins', {
+                url: '/admins',
+                controller: 'AdminsCtrl as AdminsCtrl',
+                templateUrl: 'admin.view'
+            })
+
+            .state('roles', {
+                url: '/roles',
+                controller: 'RolesCtrl as RolesCtrl',
+                templateUrl: 'role.view'
+            })
+
+            .state('permissions', {
+                url: '/permissions',
+                controller: 'PermissionsCtrl as PermissionsCtrl',
+                templateUrl: 'permission.view'
+            })
+
             .state('user', {
                 url: '/user',
                 controller: 'CoeCtrl as CoeCtrl',
@@ -59,13 +77,13 @@
             
             .state('original-signature', {
                 url: '/original-signature/:id',
-                controller: 'OriginalSignatureCertCtrl as coeCtrl',
+                controller: 'OriginalSignatureCertCtrl as OriginalSignatureCertCtrl',
                 templateUrl: 'originalsignature.view'
             })
 
             .state('original-signature-details', {
                 url: '/original-signature/details/:coe_code',
-                controller: 'OriginalSignatureCertCtrl as coeCtrl',
+                controller: 'OriginalSignatureCertCtrl as OriginalSignatureCertCtrl',
                 templateUrl: 'originalsignature.view'
             })
 
@@ -165,16 +183,31 @@
 
         }
 
-        MainCtrl.$inject = ['$window','$http'];
-        function MainCtrl($window, $http) {
+        MainCtrl.$inject = ['CoeSrvcs', '$window','$http'];
+        function MainCtrl(CoeSrvcs, $window, $http) {
             var vm = this; 
+
+            vm.logout = function(){
+                vm.routeTo('logout');
+            }
+
+            vm.menu = function(link){
+                CoeSrvcs.encrypt().then (function (response) {
+                    if(response.data.status == 200)
+                    {
+                        vm.routeTo(link+"/"+response.data.data)
+                    }
+                }, function (){ alert('Bad Request!!!') })
+
+            }
+
+
+
             vm.routeTo = function(route){
                 $window.location.href = route;
             };
+
         };
-
-
-        
 })();
 
 

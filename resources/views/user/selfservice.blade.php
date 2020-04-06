@@ -6,7 +6,7 @@
                 <div class="col-3 mt-5">
                     <div class="card">
                         <div class="card-body"> 
-                            <h4 class="header-title">Self-Survice</h4>
+                            <h4 class="header-title">Self-Service</h4>
                             <div class="form-group">
                                 <label class="col-form-label">Type of Certificate</label>
                                 <select class="form-control coe-type-selection" ng-model="CoeCtrl.coeDetails.coe_type" ng-change="CoeCtrl.selectCoeType(CoeCtrl.coeDetails.coe_type)" required>
@@ -17,15 +17,15 @@
                             <div class="form-group">
                                 <label class="col-form-label">Purpose</label>
                                 <select class="form-control coe-purposes-selection" ng-model="CoeCtrl.coeDetails.coe_purpose" required>
-                                <option value=''>- - - select purpose - - - </option> 
+                                    <option value=''>- - - select purpose - - - </option> 
                                     <option ng-value="purpose.purpose_code" ng-repeat="purpose in CoeCtrl.purposes"><%purpose.purpose_desc%></option>
                                 </select>
                             </div>
                             <div class="form-group" ng-if="CoeCtrl.is_salary_option">
                                 <label class="col-form-label">Salary Option</label>
-                                <select class="form-control coe-salary-option" ng-model="CoeCtrl.coeDetails.salary_option">
-                                <option value=''>- - - select salary option - - - </option> 
-                                <option ng-repeat="salary_option in CoeCtrl.salary_options" ng-value="salary_option.id" ng-bind="salary_option.text | uppercase"> <%salary_option.text | uppercase%> </option>
+                                <select class="form-control" ng-model="CoeCtrl.coeDetails.salary_option">
+                                    <option value=''>- - - select salary option - - - </option> 
+                                    <option ng-repeat="salary_option in CoeCtrl.salary_options" ng-value="salary_option.id"> <%salary_option.text | uppercase%> </option>
                                 </select> 
                             </div>
                             <div class="form-group">

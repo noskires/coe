@@ -12,7 +12,7 @@ trait MailTrait
 {
 
     public function sendOTP($otp){
-        // try{
+        try{
 
             $fromEmail  = "paybenadmin@pldt.com.ph";
             $email      = [Auth::user()->email] ;
@@ -32,11 +32,11 @@ trait MailTrait
 
             });
             
-        // }
-        // catch (\Exception $e) 
-        // {
-        //     return "Sending failed!";
-        // }
+        }
+        catch (\Exception $e) 
+        {
+            return "Sending failed!";
+        }
     }
 
     public function sendRequestLink($coe, $otherDetails){

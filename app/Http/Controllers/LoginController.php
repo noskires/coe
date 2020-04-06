@@ -5,6 +5,9 @@ use Illuminate\Http\Request;
 use DB;
 use Auth;
 use App\User; 
+use App\Otp; 
+use App\Coe; 
+use App\Employee; 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 use Adldap;
@@ -62,14 +65,19 @@ class LoginController extends Controller {
             $ad->addProvider($config);
 
             try {
+ 
                 //  If a successful connection is made to your server, the provider will be returned.
                 $provider   = $ad->connect();
                 Session::put('key', Crypt::encrypt($request->password));
                 $user       = User::where('email', $request->email)->first();
                 if(count($user)>0){
                     Auth::login($user);
+
+                    // return Auth::user()->id;
+
+                    // return User::all();
+
                     $this->setOtp($request->email);
-                    // Crypt::decrypt($email);
                     return redirect('otp/'.Crypt::encrypt(Auth::user()->email));
                 }
                 else{
@@ -94,14 +102,38 @@ class LoginController extends Controller {
         $transaction = DB::transaction(function($field) use($fields){
         try{
 
-                $user = User::where('email', $fields['email'])->first();
-                $user->otp                  = Str::random(6);
-                $user->is_authenticated     = 0;
-                $user->changed_by           = Auth::user()->email;
-                $user->updated_at           = Carbon::now();
-                $user->save();
+                // $user = User::where('email', $fields['email'])->first();
+                // $user->otp                  = Str::random(6);
+                // $user->is_authenticated     = 0;
+                // $user->changed_by           = Auth::user()->email;
+                // $user->updated_at           = Carbon::now();
+                // $user->save();
 
-                $this->sendOTP($user->otp);
+                // $this->sendOTP($user->otp);
+
+                // return response()->json([
+                //     'status' => 200,
+                //     'data' => null,
+                //     'message' => 'Successfully saved.'
+                // ]);
+                
+                $is_exist = Otp::where('id', Auth::user()->id)->count();
+                
+                if($is_exist>0){
+                    $Otp = Otp::where('id', Auth::user()->id)->first();
+                }
+                else{
+                    $Otp = new Otp;
+                    $Otp->id                   = Auth::user()->id;
+                }
+
+                $Otp->otp                  = Str::random(6);
+                $Otp->is_authenticated     = 0;
+                $Otp->changed_by           = Auth::user()->email;
+                $Otp->updated_at           = Carbon::now(); 
+                $Otp->save();
+
+                $this->sendOTP($Otp->otp);
 
                 return response()->json([
                     'status' => 200,

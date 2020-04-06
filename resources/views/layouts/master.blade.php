@@ -176,6 +176,13 @@
     .timeline-body > p + p {
         margin-top: 5px;
     }
+
+    .header-area-user {
+        padding: 11px 21px;
+        background-color: #485461;
+        background-image: linear-gradient(315deg, #485461 0%, #28313b 74%);
+        border-bottom: 1px solid #d8e3e7;
+    }
     </style>
 
 </head>
@@ -188,13 +195,12 @@
     <!-- preloader area end -->
 
     <!-- page container area start -->
-
+    
+    @if(Auth::user()->hasRole('admin|fulfiller'))
     <div class="page-container">
-        
         @include('layouts.sidemenu')
-        
         <!-- main content area start -->
-        <div class="main-content home-bg">
+        <div class="main-content home-bg" ng-controller="MainCtrl as MainCtrl">
             <!-- header area start -->
             <div class="header-area">
                 <div class="row align-items-center">
@@ -209,19 +215,49 @@
                     </div>
                     <!-- logout -->
                     <div class="col-md-6 col-sm-4">
+                        <a href="#" ng-click="MainCtrl.logout()" title="logout">
                         <ul class="notification-area pull-right">
                             <li class="settings-btn">
-                                <a href="logout">
                                 <i class="ti-power-off"></i>
-                                </a>
                             </li>
                         </ul>
-                        <div> <h4 class="page-user pull-right">Hi, {{Auth::user()->name}}</h4> </div>
+                        </a>
+                        <div> <h4 class="page-user pull-right"><span class="">Hi, {{Auth::user()->first_name}}</span></h4> </div>
+                    </div>
+                </div>
+            </div>
+    @else
+    <div class="page-container-user">
+    
+        <!-- main content area start -->
+        <div class="main-content home-bg" ng-controller="MainCtrl as MainCtrl">
+            <!-- header area start -->
+            <div class="header-area-user">
+                <div class="row align-items-center">
+                    <!-- nav button -->
+                    <div class="col-md-6 col-sm-8 ">
+                        <div class="nav-btn pull-left">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div> <h4 class="page-title-main pull-left">Certificate of Employment</h4> </div>
+                    </div>
+                    <!-- logout -->
+                    <div class="col-md-6 col-sm-4">
+                        <a href="#" ng-click="MainCtrl.logout()" title="logout">
+                        <ul class="notification-area pull-right">
+                            <li class="settings-btn">
+                                <i class="ti-power-off text-white"></i>
+                            </li>
+                        </ul>
+                        </a>
+                        <div> <h4 class="page-user pull-right"><span class="text-white">Hi, {{Auth::user()->first_name}}</span></h4> </div>
                     </div>
                 </div>
             </div>
             <!-- header area end --> 
-
+        @endif
             @yield('content')
 
             <div ui-view></div>

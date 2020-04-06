@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Input;
 use Carbon\Carbon;
 use Auth;
 use DB;
-use Audit;
+use DataTables;
+use App\Audit;
 use App\Location;
 
 class AuditsController extends Controller

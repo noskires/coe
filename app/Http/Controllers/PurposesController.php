@@ -130,9 +130,9 @@ class PurposesController extends Controller
         $fields = Input::post();
 
         $transaction = DB::transaction(function($field) use($fields){
-        try{
+        // try{
 
-            if(Auth::user()->is_admin==1){
+            // if(Auth::user()->is_admin==1){
 
                 $purpose = Purpose::where('id', $fields['id'])->first();
                 $purpose->purpose_desc            = $fields['purpose_desc'];
@@ -147,24 +147,24 @@ class PurposesController extends Controller
                     'message' => 'Successfully saved.'
                 ]);
 
-            }else{
+            // }else{
                         
-                return response()->json([
-                    'status' => 200,
-                    'data' => null,
-                    'message' => 'You are not authorized to update records!.'
-                ]);
-            }
+            //     return response()->json([
+            //         'status' => 200,
+            //         'data' => null,
+            //         'message' => 'You are not authorized to update records!.'
+            //     ]);
+            // }
 
-          }
-          catch (\Exception $e) 
-          {
-            return response()->json([
-              'status' => 500,
-              'data' => null,
-              'message' => 'Error, please try again!'
-            ]);
-          }
+        //   }
+        //   catch (\Exception $e) 
+        //   {
+        //     return response()->json([
+        //       'status' => 500,
+        //       'data' => null,
+        //       'message' => 'Error, please try again!'
+        //     ]);
+        //   }
         });
 
         return $transaction;

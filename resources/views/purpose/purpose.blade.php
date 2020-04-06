@@ -3,6 +3,7 @@
         <div class="col-md-12 col-sm-12 col-ml-12">
             <div class="row">
                 <!-- Textual inputs start -->
+                @role('admin')
                 <div class="col-3 mt-5">
                     <div class="card">
                         <div class="card-body">
@@ -45,9 +46,11 @@
                             <button type="submit" class="btn btn-primary mt-4 pr-4 pl-4" ng-click="purposeCtrl.createPurposeBtn(purposeDetails)">Submit</button>
                         </div>
                     </div>
-                </div>
-                <!-- Textual inputs end -->
+                </div> 
                 <div class="col-9 mt-5">
+                @else
+                <div class="col-12 mt-5">
+                @endrole
                     <div class="card">
                         <div class="card-body">
                             <!-- <h4 class="header-title">Table</h4> -->
@@ -61,7 +64,9 @@
                                             <th>Show in self survice</th>
                                             <th>Show in original signature</th>
                                             <th>Created by</th>
+                                            @role('admin')
                                             <th>Actions</th>
+                                            @endrole
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -72,8 +77,11 @@
                                             <td ng-bind="purpose.self_service"> </td>
                                             <td ng-bind="purpose.original_signature"> </td>
                                             <td ng-bind="purpose.created_by"> </td> 
+                                            @role('admin')
                                             <td valign="middle"> <a href="#" title="edit" ui-sref="purpose-edit({purpose_code_edit:purpose.purpose_code})"> <i class="ti-pencil"></i> </a> | 
-                                                <a href="#" title="delete" ui-sref="purpose-delete({purpose_code_delete:purpose.purpose_code})"> <i class="ti-trash"></i> </a> </td>
+                                                <a href="#" title="delete" ui-sref="purpose-delete({purpose_code_delete:purpose.purpose_code})"> <i class="ti-trash"></i> </a> 
+                                            </td>
+                                            @endrole
                                         </tr>
 
                                     </tbody>
@@ -109,16 +117,16 @@
                                 <label for="">Show in self service</label>
                                 <select class="form-control" ng-model="purposeCtrl.collection.self_service" style="width:95%" >
                                     <option value=''>- - - SELECT - - - </option>  
-                                    <option ng-value='1'>Yes</option> 
-                                    <option ng-value='0'>No</option> 
+                                    <option value='1'>Yes</option> 
+                                    <option value='0'>No</option> 
                                 </select> 
                             </div>
                             <div class="form-group col-md-3">
                                 <label for="">Show in original signature</label>
                                 <select class="form-control" ng-model="purposeCtrl.collection.original_signature" style="width:95%" >
                                     <option value=''>- - - SELECT - - - </option>  
-                                    <option ng-value='1'>Yes</option> 
-                                    <option ng-value='0'>No</option> 
+                                    <option value='1'>Yes</option> 
+                                    <option value='0'>No</option> 
                                 </select>
                             </div>
                         </div>
